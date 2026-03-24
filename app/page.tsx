@@ -447,21 +447,37 @@ function PigMap({ selected, onSelect }: { selected: PorkCut; onSelect: (cut: Por
   return (
     <div className="relative mx-auto w-full max-w-[640px] rounded-3xl border border-orange-100 bg-white p-4 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
       <div className="relative overflow-hidden rounded-2xl bg-[#f3f4f6]">
-    <div className="relative w-full max-w-xl mx-auto">
-  <img
-    src="/pig-map.png"
-    alt="돼지고기 부위"
-    className="w-full rounded-xl"
-  />
+        <svg viewBox="0 0 640 360" className="h-auto w-full">
+          <rect width="640" height="360" fill="#f3f4f6" />
+          <path d="M200 120 C240 90, 320 80, 420 100 C500 115, 560 150, 560 200 C560 260, 520 300, 440 310 C360 320, 260 310, 200 280 C150 250, 140 180, 200 120 Z" fill="#d1d5db" />
+          <circle cx="140" cy="160" r="55" fill="#d1d5db" />
+          <circle cx="110" cy="110" r="18" fill="#d1d5db" />
+          <circle cx="170" cy="110" r="18" fill="#d1d5db" />
+          <ellipse cx="110" cy="170" rx="18" ry="12" fill="#cbd5e1" />
+          <rect x="260" y="260" width="16" height="60" fill="#d1d5db" />
+          <rect x="300" y="260" width="16" height="60" fill="#d1d5db" />
+          <rect x="420" y="260" width="16" height="60" fill="#d1d5db" />
+          <rect x="460" y="260" width="16" height="60" fill="#d1d5db" />
+          {Object.entries(mapItems).map(([id, item]) => {
+            const isActive = selected.id === id || hoverId === id;
+            return <ellipse key={id} cx={item.area.cx} cy={item.area.cy} rx={item.area.rx} ry={item.area.ry} fill="#f59e0b" opacity={isActive ? 0.35 : 0} />;
+          })}
+        </svg>
 
-  <button className="absolute top-[35%] left-[35%] bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
-    목살
-  </button>
-
-  <button className="absolute top-[60%] left-[50%] bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
-    삼겹살
-  </button>
-</div>
+        <svg viewBox="0 0 640 360" className="absolute inset-0 h-full w-full">
+          <g stroke="#f59e0b" fill="#f59e0b" strokeWidth="2">
+            {Object.entries(mapItems).map(([id, item]) => {
+              const active = selected.id === id || hoverId === id;
+              const midY = item.labelY < item.y ? item.labelY + 16 : item.labelY - 16;
+              return (
+                <g key={id} opacity={active ? 1 : 0.4}>
+                  <circle cx={item.x} cy={item.y} r={active ? 7 : 5} />
+                  <path d={`M ${item.x} ${item.y} L ${item.x} ${midY} L ${item.labelX} ${midY}`} fill="none" />
+                </g>
+              );
+            })}
+          </g>
+        </svg>
 
         {Object.entries(mapItems).map(([id, item]) => {
           const active = selected.id === id;
