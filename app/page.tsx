@@ -543,7 +543,7 @@ function RecommendationPanel({ prefs, setPrefs }: { prefs: Prefs; setPrefs: Reac
         <CardHeader>
           <div className="flex items-center justify-between gap-3">
             <CardTitle className="text-xl">상황별 추천 받기</CardTitle>
-            <Button type="button" variant="outline" className="rounded-full border-orange-200" onClick={() => setPrefs(defaultPrefs)}>
+            <Button type="button" variant="outline" className="rounded-full border-orange-200 text-orange-600 hover:bg-orange-50 hover:border-orange-300 px-4 py-2 text-sm font-medium transition" onClick={() => setPrefs(defaultPrefs)}>
               초기화
             </Button>
           </div>
