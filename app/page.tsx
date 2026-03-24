@@ -785,9 +785,29 @@ function HomeView({
 
               <div className="mt-6 flex flex-wrap gap-3">
                 <Badge className="rounded-full border-0 bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-900"><PiggyBank className="mr-2 h-4 w-4" /> 돼지고기 MVP</Badge>
-                <button type="button" onClick={() => applyQuickKeyword("grill")} className="inline-flex items-center rounded-full border border-orange-200 bg-white px-4 py-2 text-sm text-slate-700 transition hover:border-orange-300 hover:bg-orange-50"><Flame className="mr-2 h-4 w-4 text-orange-500" /> 구이 추천</button>
-                <button type="button" onClick={() => applyQuickKeyword("stew")} className="inline-flex items-center rounded-full border border-orange-200 bg-white px-4 py-2 text-sm text-slate-700 transition hover:border-orange-300 hover:bg-orange-50"><Soup className="mr-2 h-4 w-4 text-orange-500" /> 찜·국물용</button>
-                <button type="button" onClick={() => applyQuickKeyword("budget")} className="inline-flex items-center rounded-full border border-orange-200 bg-white px-4 py-2 text-sm text-slate-700 transition hover:border-orange-300 hover:bg-orange-50"><BadgeDollarSign className="mr-2 h-4 w-4 text-orange-500" /> 가성비 선택</button>
+                <button
+  type="button"
+  onClick={() => applyQuickKeyword("grill")}
+  className="rounded-full border-orange-200 text-orange-600 hover:bg-orange-50 hover:border-orange-300 px-4 py-2 text-sm font-medium transition border"
+>
+  🔥 구이 추천
+</button>
+
+<button
+  type="button"
+  onClick={() => applyQuickKeyword("stew")}
+  className="rounded-full border-orange-200 text-orange-600 hover:bg-orange-50 hover:border-orange-300 px-4 py-2 text-sm font-medium transition border"
+>
+  🍲 찜·국물용
+</button>
+
+<button
+  type="button"
+  onClick={() => applyQuickKeyword("budget")}
+  className="rounded-full border-orange-200 text-orange-600 hover:bg-orange-50 hover:border-orange-300 px-4 py-2 text-sm font-medium transition border"
+>
+  💰 가성비 선택
+</button>
               </div>
 
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
