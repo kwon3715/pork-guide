@@ -6,7 +6,6 @@ import {
   Beef,
   PiggyBank,
   Flame,
-  BadgeDollarSign,
   Sparkles,
   Scale,
   Heart,
@@ -17,14 +16,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 
-type SubtypeInfo = {
-  name: string;
-  note: string;
+type MeatType = "pork" | "beef" | "chicken";
+type PageMode = "home" | "detail";
+
+type Prefs = {
+  cooking: "구이" | "볶음" | "찜" | "국물요리" | "튀김" | "수육";
+  texture: "부드러운 편" | "쫄깃한 편" | "담백한 편" | "상관없음";
+  fat: "담백한 쪽" | "중간" | "고소한 쪽";
+  budget: "가성비 우선" | "보통" | "가격보다 용도";
 };
-
-type MeatType = "pork" | "beef";
 
 type MeatCut = {
   id: string;
@@ -33,33 +34,65 @@ type MeatCut = {
   animal: string;
   short: string;
   location: string;
-  texture: string;
-  fat: number;
-  flavor: number;
-  tenderness: number;
-  price: string;
-  beginner: string;
-  cooking: string[];
+  factNote: string;
+  usageNote: string;
+  cautionNote: string;
+  cooking: Prefs["cooking"][];
   tags: string[];
-  recommendFor: string[];
-  avoidFor: string[];
-  grillType?: "숯구이" | "불판구이" | "둘 다";
   alternatives: string[];
-  subtypes: SubtypeInfo[];
+  profile: {
+    fat: number;
+    flavor: number;
+    tender: number;
+  };
 };
-
-type Prefs = {
-  cooking: "구이" | "볶음" | "찜" | "국물요리" | "돈가스/튀김" | "수육";
-  texture: "부드러운" | "쫄깃한" | "씹는 맛 있는" | "상관없음";
-  fat: "담백한 게 좋음" | "적당히" | "고소하고 기름진 게 좋음";
-  budget: "가성비 위주" | "보통" | "가격 상관없음";
-};
-
-type PageMode = "home" | "detail";
 
 type RecommendationCut = MeatCut & {
   score: number;
   reasons: string[];
+};
+
+const defaultPrefs: Prefs = {
+  cooking: "구이",
+  texture: "부드러운 편",
+  fat: "중간",
+  budget: "보통",
+};
+
+const recommendationQuestions = {
+  cooking: ["구이", "볶음", "찜", "국물요리", "튀김", "수육"],
+  texture: ["부드러운 편", "쫄깃한 편", "담백한 편", "상관없음"],
+  fat: ["담백한 쪽", "중간", "고소한 쪽"],
+  budget: ["가성비 우선", "보통", "가격보다 용도"],
+} as const;
+
+const meatMeta: Record<
+  MeatType,
+  {
+    label: string;
+    hero: string;
+    placeholder: string;
+    sideDesc: string;
+  }
+> = {
+  pork: {
+    label: "돼지고기",
+    hero: "돼지고기 부위를 쉽게 고르는 가이드",
+    placeholder: "삼겹살, 목심, 안심, 앞다리처럼 검색해보세요",
+    sideDesc: "삼겹살, 목심, 등심, 안심 등",
+  },
+  beef: {
+    label: "소고기",
+    hero: "소고기 부위를 쉽게 고르는 가이드",
+    placeholder: "등심, 채끝, 안심, 양지처럼 검색해보세요",
+    sideDesc: "등심, 채끝, 안심, 양지 등",
+  },
+  chicken: {
+    label: "닭고기",
+    hero: "닭고기 부위를 쉽게 고르는 가이드",
+    placeholder: "가슴살, 안심, 날개, 닭다리처럼 검색해보세요",
+    sideDesc: "가슴살, 안심, 날개, 닭다리 등",
+  },
 };
 
 const porkCuts: MeatCut[] = [
@@ -68,460 +101,327 @@ const porkCuts: MeatCut[] = [
     meatType: "pork",
     name: "삼겹살",
     animal: "돼지",
-    short: "기름지고 고소해서 구이용으로 가장 대중적인 부위",
+    short: "지방층이 뚜렷해 구이로 많이 찾는 대표 부위",
     location: "배 쪽",
-    texture: "부드럽고 촉촉함",
-    fat: 90,
-    flavor: 85,
-    tenderness: 78,
-    price: "중간~약간 높음",
-    beginner: "매우 높음",
-    cooking: ["구이", "수육", "김치찜"],
-    tags: ["고소함", "구이용", "대중적", "기름짐"],
-    recommendFor: ["고소한 맛 좋아하는 사람", "실패 없는 구이용 찾는 사람"],
-    avoidFor: ["기름진 부위를 싫어하는 사람", "다이어트 식단 찾는 사람"],
-    grillType: "둘 다",
-    alternatives: ["목살", "갈비"],
-    subtypes: [
-      { name: "일반 삼겹살", note: "가장 대중적인 형태로 구이와 수육에 무난함" },
-      { name: "오겹살", note: "껍데기가 붙어 있어 식감이 더 쫀득함" },
-      { name: "두꺼운 삼겹살", note: "육즙이 잘 살아 있어 구이용으로 인기" },
-    ],
+    factNote: "배 쪽에 위치하며 지방 비중이 비교적 높은 편으로 알려진다.",
+    usageNote: "구이용으로 많이 선택되며, 볶음류에 쓰는 경우도 있다.",
+    cautionNote: "기름기가 부담스러운 사람에게는 다소 무겁게 느껴질 수 있다.",
+    cooking: ["구이", "볶음"],
+    tags: ["대표부위", "구이용", "고소한 편"],
+    alternatives: ["목심", "갈비"],
+    profile: { fat: 88, flavor: 82, tender: 72 },
   },
   {
-    id: "moksal",
+    id: "moksim",
     meatType: "pork",
-    name: "목살",
+    name: "목심",
     animal: "돼지",
-    short: "적당한 지방과 살코기 균형이 좋은 구이용 인기 부위",
-    location: "목 주변",
-    texture: "부드럽고 약간 쫄깃함",
-    fat: 62,
-    flavor: 74,
-    tenderness: 76,
-    price: "중간",
-    beginner: "매우 높음",
-    cooking: ["구이", "스테이크식 구이", "제육볶음"],
-    tags: ["균형형", "구이용", "덜 느끼함", "대중적"],
-    recommendFor: ["삼겹살보다 덜 느끼한 부위를 원하는 사람"],
-    avoidFor: ["아주 부드러운 식감만 원하는 사람"],
-    grillType: "둘 다",
-    alternatives: ["삼겹살", "앞다리살"],
-    subtypes: [
-      { name: "일반 목살", note: "가장 무난하고 대중적인 구이용" },
-      { name: "두툼 목살", note: "스테이크식 구이에 잘 맞음" },
-      { name: "숙성 목살", note: "풍미가 진해지고 식감이 부드러워짐" },
-    ],
+    short: "지방과 살코기 균형이 비교적 좋아 구이에 많이 쓰이는 부위",
+    location: "목 부위",
+    factNote: "근육 사이에 지방이 고르게 분포하는 편으로 소개된다.",
+    usageNote: "구이, 전골, 오래 익히는 요리에 두루 쓰이는 편이다.",
+    cautionNote: "완전히 담백한 부위를 원하는 사람에게는 조금 진하게 느껴질 수 있다.",
+    cooking: ["구이", "국물요리"],
+    tags: ["균형형", "구이용", "대중적"],
+    alternatives: ["삼겹살", "앞다리"],
+    profile: { fat: 60, flavor: 76, tender: 74 },
+  },
+  {
+    id: "deungsim_pork",
+    meatType: "pork",
+    name: "등심",
+    animal: "돼지",
+    short: "운동량이 적은 쪽이라 비교적 부드럽게 쓰기 쉬운 부위",
+    location: "등 쪽",
+    factNote: "등 쪽에 위치하며 비교적 연한 부위로 소개되는 경우가 많다.",
+    usageNote: "커틀릿, 구이, 볶음용으로 활용하기 쉽다.",
+    cautionNote: "너무 오래 익히면 퍽퍽하게 느껴질 수 있다.",
+    cooking: ["튀김", "구이", "볶음"],
+    tags: ["비교적 부드러움", "활용도", "담백한 편"],
+    alternatives: ["안심", "앞다리"],
+    profile: { fat: 34, flavor: 58, tender: 76 },
+  },
+  {
+    id: "ansim_pork",
+    meatType: "pork",
+    name: "안심",
+    animal: "돼지",
+    short: "지방이 적고 비교적 연해 담백하게 먹기 좋은 부위",
+    location: "등 안쪽",
+    factNote: "운동을 적게 하는 근육으로 비교적 매우 연한 쪽으로 소개된다.",
+    usageNote: "튀김, 구이, 오래 끓이는 요리에 쓰기 좋다.",
+    cautionNote: "지방 풍미를 기대하면 다소 심심하게 느껴질 수 있다.",
+    cooking: ["튀김", "구이", "국물요리"],
+    tags: ["저지방", "담백한 편", "부드러운 편"],
+    alternatives: ["등심", "뒷다리"],
+    profile: { fat: 14, flavor: 46, tender: 90 },
   },
   {
     id: "apdari",
     meatType: "pork",
-    name: "앞다리살",
+    name: "앞다리",
     animal: "돼지",
-    short: "가성비가 좋고 활용도가 높은 실속형 부위",
-    location: "앞다리 윗부분",
-    texture: "약간 쫄깃하고 탄탄함",
-    fat: 38,
-    flavor: 58,
-    tenderness: 52,
-    price: "저렴한 편",
-    beginner: "높음",
-    cooking: ["제육볶음", "불고기", "찌개", "수육"],
-    tags: ["가성비", "실속형", "볶음용", "대용량"],
-    recommendFor: ["가성비 중시", "양 많은 요리"],
-    avoidFor: ["구이용으로 부드러운 부위 찾는 사람"],
-    alternatives: ["뒷다리살", "목살"],
-    subtypes: [
-      { name: "얇게 썬 앞다리살", note: "불고기와 제육볶음에 자주 사용됨" },
-      { name: "수육용 앞다리살", note: "가성비 좋은 수육 재료" },
-    ],
+    short: "살코기 비중이 높고 여러 요리에 두루 쓰기 쉬운 부위",
+    location: "앞다리 쪽",
+    factNote: "살코기 함량이 풍부한 편으로 소개된다.",
+    usageNote: "불고기, 찌개, 수육처럼 활용 범위가 넓다.",
+    cautionNote: "구이만 생각하면 더 부드러운 부위가 나을 수 있다.",
+    cooking: ["볶음", "국물요리", "수육"],
+    tags: ["가성비", "활용도", "실속형"],
+    alternatives: ["목심", "뒷다리"],
+    profile: { fat: 32, flavor: 62, tender: 58 },
   },
   {
-    id: "dwitdari",
-    meatType: "pork",
-    name: "뒷다리살",
-    animal: "돼지",
-    short: "지방이 적고 가격이 저렴한 실속형 부위",
-    location: "뒷다리 쪽",
-    texture: "단단하고 약간 퍽퍽할 수 있음",
-    fat: 18,
-    flavor: 45,
-    tenderness: 40,
-    price: "저렴함",
-    beginner: "중간",
-    cooking: ["장조림", "불고기", "다짐육", "튀김류"],
-    tags: ["저지방", "가성비", "담백함", "실속형"],
-    recommendFor: ["저렴한 부위 찾는 사람", "기름 적은 고기 원하는 사람"],
-    avoidFor: ["구이에서 촉촉함을 기대하는 사람"],
-    alternatives: ["앞다리살", "안심"],
-    subtypes: [
-      { name: "슬라이스 뒷다리살", note: "불고기나 볶음용으로 많이 사용됨" },
-      { name: "다짐용 뒷다리살", note: "만두소나 다짐육용으로 활용 가능" },
-    ],
-  },
-  {
-    id: "hangjeongsal",
-    meatType: "pork",
-    name: "항정살",
-    animal: "돼지",
-    short: "쫄깃한 식감과 진한 고소함이 매력적인 특수부위",
-    location: "목덜미 주변",
-    texture: "쫄깃하고 탱탱함",
-    fat: 72,
-    flavor: 82,
-    tenderness: 70,
-    price: "비싼 편",
-    beginner: "높음",
-    cooking: ["구이"],
-    tags: ["특수부위", "쫄깃함", "구이용", "고소함"],
-    recommendFor: ["식감 있는 구이 좋아하는 사람"],
-    avoidFor: ["가성비를 가장 중요하게 보는 사람"],
-    grillType: "숯구이",
-    alternatives: ["갈매기살", "목살"],
-    subtypes: [
-      { name: "생 항정살", note: "쫄깃한 식감과 고소함이 잘 살아 있음" },
-      { name: "두툼 항정살", note: "씹는 맛이 더 강하게 느껴짐" },
-    ],
-  },
-  {
-    id: "galmaegi",
-    meatType: "pork",
-    name: "갈매기살",
-    animal: "돼지",
-    short: "진한 맛과 쫄깃함이 살아 있는 인기 특수부위",
-    location: "횡격막 근처",
-    texture: "쫄깃하고 씹는 맛이 좋음",
-    fat: 50,
-    flavor: 80,
-    tenderness: 58,
-    price: "중간~비쌈",
-    beginner: "중간~높음",
-    cooking: ["구이"],
-    tags: ["특수부위", "쫄깃함", "육향", "구이용"],
-    recommendFor: ["씹는 맛과 진한 육향을 좋아하는 사람"],
-    avoidFor: ["아주 부드러운 고기를 원하는 사람"],
-    grillType: "숯구이",
-    alternatives: ["항정살", "목살"],
-    subtypes: [
-      { name: "양념 갈매기살", note: "강한 불향과 감칠맛을 내기 좋음" },
-      { name: "생 갈매기살", note: "육향과 씹는 맛을 더 잘 느낄 수 있음" },
-    ],
-  },
-  {
-    id: "deungsim",
-    meatType: "pork",
-    name: "등심",
-    animal: "돼지",
-    short: "담백하면서도 적당한 육향이 있는 활용도 높은 부위",
-    location: "등 쪽",
-    texture: "부드럽지만 과하게 익히면 퍽퍽해짐",
-    fat: 34,
-    flavor: 56,
-    tenderness: 63,
-    price: "중간",
-    beginner: "높음",
-    cooking: ["돈가스/튀김", "구이", "볶음"],
-    tags: ["담백함", "돈가스", "깔끔함", "활용도"],
-    recommendFor: ["기름기 적당한 부위 원하는 사람"],
-    avoidFor: ["진한 지방 풍미 원하는 사람"],
-    grillType: "둘 다",
-    alternatives: ["안심", "앞다리살"],
-    subtypes: [
-      { name: "돈가스용 등심", note: "튀김에 가장 많이 쓰이는 형태" },
-      { name: "구이용 등심", note: "담백한 구이를 원할 때 적합" },
-    ],
-  },
-  {
-    id: "ansim",
-    meatType: "pork",
-    name: "안심",
-    animal: "돼지",
-    short: "매우 부드럽고 지방이 적어 담백한 부위",
-    location: "등 안쪽 깊은 부위",
-    texture: "매우 부드러움",
-    fat: 12,
-    flavor: 42,
-    tenderness: 90,
-    price: "중간~약간 높음",
-    beginner: "높음",
-    cooking: ["돈가스/튀김", "장조림", "볶음"],
-    tags: ["부드러움", "저지방", "담백함", "초보용"],
-    recommendFor: ["부드러운 식감 원하는 사람", "저지방 부위 찾는 사람"],
-    avoidFor: ["구이에서 육즙과 풍미를 기대하는 사람"],
-    alternatives: ["등심", "뒷다리살"],
-    subtypes: [
-      { name: "돈가스용 안심", note: "부드러운 식감이 가장 큰 장점" },
-      { name: "장조림용 안심", note: "담백하고 깔끔한 맛을 내기 좋음" },
-    ],
-  },
-  {
-    id: "galbi",
+    id: "galbi_pork",
     meatType: "pork",
     name: "갈비",
     animal: "돼지",
-    short: "뼈 주변의 진한 풍미가 살아 있는 부위",
+    short: "뼈 주변 풍미를 살리기 좋아 찜이나 양념구이에 잘 어울리는 부위",
     location: "갈비뼈 주변",
-    texture: "부드럽고 진한 맛",
-    fat: 56,
-    flavor: 84,
-    tenderness: 68,
-    price: "비싼 편",
-    beginner: "중간",
-    cooking: ["양념갈비", "찜", "구이"],
-    tags: ["갈비요리", "진한맛", "특별식", "양념"],
-    recommendFor: ["진한 맛", "특별한 메뉴"],
-    avoidFor: ["간편한 요리"],
-    grillType: "숯구이",
-    alternatives: ["삼겹살", "목살"],
-    subtypes: [
-      { name: "양념 갈비", note: "단짠 양념과 잘 어울리는 대표 형태" },
-      { name: "생 갈비", note: "고기 본연의 풍미를 느끼기 좋음" },
-    ],
+    factNote: "갈비 부위는 찜이나 양념 요리에 자주 쓰인다.",
+    usageNote: "갈비찜, 바비큐, 양념구이처럼 풍미를 살리는 조리에 잘 맞는다.",
+    cautionNote: "손질 상태나 뼈 비중에 따라 먹는 느낌 차이가 있다.",
+    cooking: ["찜", "구이"],
+    tags: ["진한 맛", "양념요리", "특별식"],
+    alternatives: ["삼겹살", "목심"],
+    profile: { fat: 56, flavor: 84, tender: 64 },
   },
   {
-    id: "satae",
+    id: "satae_pork",
     meatType: "pork",
     name: "사태",
     animal: "돼지",
-    short: "오래 익히면 깊은 맛이 나는 찜·국물용 부위",
-    location: "다리 쪽 근육 부위",
-    texture: "단단하지만 푹 익히면 부드러워짐",
-    fat: 16,
-    flavor: 61,
-    tenderness: 44,
-    price: "중간 이하",
-    beginner: "중간",
-    cooking: ["찜", "국물요리", "장조림"],
-    tags: ["찜용", "국물용", "깊은맛", "저지방"],
-    recommendFor: ["오래 끓이는 요리 좋아하는 사람"],
-    avoidFor: ["바로 구워 먹을 부위 찾는 사람"],
-    alternatives: ["앞다리살", "갈비"],
-    subtypes: [
-      { name: "장조림용 사태", note: "오래 익힐수록 결이 부드러워짐" },
-      { name: "수육용 사태", note: "담백하고 진한 국물 맛을 내기 좋음" },
-    ],
+    short: "오래 익히는 쪽에 더 잘 맞는 편의 부위",
+    location: "다리 근육 쪽",
+    factNote: "근육을 많이 쓰는 부위라 오래 익히는 조리에 어울리는 편이다.",
+    usageNote: "국물요리나 찜류에서 쓰기 좋다.",
+    cautionNote: "빠른 구이용으로는 다소 단단하게 느껴질 수 있다.",
+    cooking: ["국물요리", "찜"],
+    tags: ["국물용", "오래익힘", "담백한 편"],
+    alternatives: ["앞다리", "갈비"],
+    profile: { fat: 18, flavor: 60, tender: 44 },
   },
 ];
 
 const beefCuts: MeatCut[] = [
   {
-    id: "beef_deungsim",
+    id: "deungsim_beef",
     meatType: "beef",
     name: "등심",
     animal: "소",
-    short: "풍미와 부드러움의 균형이 좋아 가장 대중적인 소고기 구이 부위",
-    location: "등 쪽",
-    texture: "부드럽고 육즙이 좋음",
-    fat: 58,
-    flavor: 88,
-    tenderness: 82,
-    price: "비싼 편",
-    beginner: "매우 높음",
-    cooking: ["구이", "스테이크"],
-    tags: ["구이용", "풍미", "대중적", "소고기 대표"],
-    recommendFor: ["처음 소고기 고르는 사람", "실패 없는 구이 찾는 사람"],
-    avoidFor: ["가성비를 가장 우선하는 사람"],
-    grillType: "둘 다",
-    alternatives: ["채끝", "부채살"],
-    subtypes: [
-      { name: "꽃등심", note: "마블링이 좋아 고소한 풍미가 강함" },
-      { name: "알등심", note: "등심의 중심부로 식감이 안정적임" },
-    ],
+    short: "구이와 스테이크에 많이 쓰이는 대표 부위",
+    location: "등 가운데 쪽",
+    factNote: "등 가운데에 위치하며 구이·스테이크용 대표 부위로 널리 알려져 있다.",
+    usageNote: "구이, 스테이크에 가장 무난하게 접근하기 좋은 편이다.",
+    cautionNote: "가격 부담이 있는 편이라 용도 대비 예산을 함께 보는 게 좋다.",
+    cooking: ["구이"],
+    tags: ["대표부위", "구이용", "풍미"],
+    alternatives: ["채끝", "안심"],
+    profile: { fat: 62, flavor: 88, tender: 82 },
   },
   {
-    id: "beef_chaekkeut",
+    id: "chaekkeut",
     meatType: "beef",
     name: "채끝",
     animal: "소",
-    short: "담백함과 풍미가 균형 잡힌 스테이크용 인기 부위",
-    location: "허리 뒤쪽",
-    texture: "부드럽고 탄력이 있음",
-    fat: 42,
-    flavor: 83,
-    tenderness: 80,
-    price: "비싼 편",
-    beginner: "높음",
-    cooking: ["구이", "스테이크"],
-    tags: ["스테이크", "균형형", "풍미", "담백함"],
-    recommendFor: ["느끼하지 않은 소고기 구이 원하는 사람"],
-    avoidFor: ["저렴한 부위를 찾는 사람"],
-    grillType: "둘 다",
+    short: "부드러움과 풍미의 균형이 좋아 스테이크용으로 많이 찾는 부위",
+    location: "허리 끝 쪽",
+    factNote: "허리 끝 부분으로 설명되며 구이·스테이크용으로 자주 쓰인다.",
+    usageNote: "스테이크, 구이에 잘 맞고 비교적 균형감 있는 선택지다.",
+    cautionNote: "완전히 담백한 부위를 기대하면 등심보다 낫지만 여전히 진한 편일 수 있다.",
+    cooking: ["구이"],
+    tags: ["균형형", "스테이크", "풍미"],
     alternatives: ["등심", "안심"],
-    subtypes: [
-      { name: "스테이크용 채끝", note: "두껍게 썰어 구우면 식감이 좋음" },
-      { name: "구이용 채끝", note: "한입 크기 구이용으로도 인기" },
-    ],
+    profile: { fat: 44, flavor: 84, tender: 80 },
   },
   {
-    id: "beef_ansim",
+    id: "ansim_beef",
     meatType: "beef",
     name: "안심",
     animal: "소",
-    short: "가장 부드러운 식감을 원하는 사람에게 잘 맞는 부위",
+    short: "비교적 가장 부드러운 쪽으로 많이 알려진 부위",
     location: "등 안쪽",
-    texture: "매우 부드러움",
-    fat: 18,
-    flavor: 70,
-    tenderness: 96,
-    price: "비싼 편",
-    beginner: "높음",
-    cooking: ["구이", "스테이크"],
-    tags: ["부드러움", "저지방", "고급", "담백함"],
-    recommendFor: ["부드러운 식감 최우선", "기름 적은 소고기 원하는 사람"],
-    avoidFor: ["진한 지방 풍미를 기대하는 사람"],
-    grillType: "둘 다",
+    factNote: "몸 안쪽에 위치해 움직임이 적어 매우 연한 편으로 설명된다.",
+    usageNote: "구이, 스테이크처럼 식감을 살리는 조리에 잘 맞는다.",
+    cautionNote: "지방 풍미보다 연한 식감을 우선할 때 잘 맞는다.",
+    cooking: ["구이"],
+    tags: ["부드러운 편", "고급", "담백한 편"],
     alternatives: ["채끝", "우둔"],
-    subtypes: [
-      { name: "메달리온 안심", note: "두껍게 썰어 굽기 좋음" },
-      { name: "스테이크 안심", note: "가장 부드러운 식감이 장점" },
-    ],
+    profile: { fat: 18, flavor: 70, tender: 96 },
   },
   {
-    id: "beef_buchaesal",
+    id: "buchaesal",
     meatType: "beef",
     name: "부채살",
     animal: "소",
-    short: "가성비와 풍미를 동시에 챙기기 좋은 인기 부위",
-    location: "어깨 안쪽",
-    texture: "부드럽지만 결이 살아 있음",
-    fat: 36,
-    flavor: 78,
-    tenderness: 72,
-    price: "중간",
-    beginner: "높음",
-    cooking: ["구이", "스테이크", "볶음"],
-    tags: ["가성비", "구이용", "풍미", "실속형"],
-    recommendFor: ["가성비 좋은 소고기 찾는 사람", "구이와 볶음 둘 다 원하는 사람"],
-    avoidFor: ["최상급 마블링만 원하는 사람"],
-    grillType: "둘 다",
-    alternatives: ["등심", "치마살"],
-    subtypes: [
-      { name: "구이용 부채살", note: "얇게 구우면 식감이 좋음" },
-      { name: "스테이크용 부채살", note: "두툼하게 썰어도 무난함" },
-    ],
+    short: "가성비와 활용도를 함께 보기 좋은 편의 부위",
+    location: "앞다리 쪽",
+    factNote: "앞다리 계열에서 많이 찾는 부위 중 하나다.",
+    usageNote: "구이와 볶음에 두루 쓰기 쉬운 편이다.",
+    cautionNote: "최상급 마블링 중심의 식감을 기대하면 차이가 있다.",
+    cooking: ["구이", "볶음"],
+    tags: ["실속형", "활용도", "구이용"],
+    alternatives: ["채끝", "우둔"],
+    profile: { fat: 34, flavor: 76, tender: 68 },
   },
   {
-    id: "beef_chimasal",
-    meatType: "beef",
-    name: "치마살",
-    animal: "소",
-    short: "진한 육향과 쫄깃한 식감이 매력적인 구이용 부위",
-    location: "배 쪽 안쪽",
-    texture: "쫄깃하고 육향이 진함",
-    fat: 48,
-    flavor: 90,
-    tenderness: 68,
-    price: "중간~비쌈",
-    beginner: "중간~높음",
-    cooking: ["구이"],
-    tags: ["육향", "쫄깃함", "구이용", "풍미"],
-    recommendFor: ["씹는 맛과 진한 소고기 향을 좋아하는 사람"],
-    avoidFor: ["아주 부드러운 식감만 원하는 사람"],
-    grillType: "숯구이",
-    alternatives: ["부채살", "토시살"],
-    subtypes: [
-      { name: "생 치마살", note: "육향과 식감을 가장 잘 느끼기 좋음" },
-      { name: "양념 치마살", note: "감칠맛과 풍미가 강해짐" },
-    ],
-  },
-  {
-    id: "beef_yangji",
+    id: "yangji",
     meatType: "beef",
     name: "양지",
     animal: "소",
-    short: "국물 요리와 장시간 조리에 잘 맞는 대표 부위",
-    location: "가슴 아래쪽",
-    texture: "단단하지만 오래 익히면 깊은 맛이 남",
-    fat: 24,
-    flavor: 82,
-    tenderness: 46,
-    price: "중간",
-    beginner: "높음",
-    cooking: ["국물요리", "수육", "장조림"],
-    tags: ["국물용", "깊은맛", "담백함", "활용도"],
-    recommendFor: ["국밥, 탕, 장조림 좋아하는 사람"],
-    avoidFor: ["바로 구워 먹을 부위를 찾는 사람"],
+    short: "오래 끓일수록 국물 맛을 살리기 좋은 부위",
+    location: "앞가슴~복부 아래쪽",
+    factNote: "결합조직이 많아 오래 끓이는 조리에 잘 맞는다고 소개된다.",
+    usageNote: "국거리, 장시간 조리, 수육류에 잘 어울린다.",
+    cautionNote: "빠르게 굽는 용도만 생각하면 다른 부위가 더 낫다.",
+    cooking: ["국물요리", "수육"],
+    tags: ["국물용", "깊은맛", "오래익힘"],
     alternatives: ["사태", "우둔"],
-    subtypes: [
-      { name: "국거리 양지", note: "국물 맛이 진하게 우러남" },
-      { name: "수육용 양지", note: "담백하면서 결이 살아 있음" },
-    ],
+    profile: { fat: 28, flavor: 82, tender: 48 },
   },
   {
-    id: "beef_satae",
+    id: "satae_beef",
     meatType: "beef",
     name: "사태",
     animal: "소",
-    short: "찜, 수육, 장조림처럼 오래 익히는 요리에 잘 맞는 부위",
-    location: "다리 근육 부위",
-    texture: "쫄깃하고 결이 단단함",
-    fat: 16,
-    flavor: 75,
-    tenderness: 44,
-    price: "중간",
-    beginner: "중간",
-    cooking: ["찜", "국물요리", "장조림", "수육"],
-    tags: ["찜용", "국물용", "저지방", "쫄깃함"],
-    recommendFor: ["오래 끓이는 요리 좋아하는 사람"],
-    avoidFor: ["바로 부드럽게 먹는 구이용 찾는 사람"],
+    short: "근육 결이 살아 있어 오래 익히는 요리에 잘 맞는 부위",
+    location: "다리 쪽",
+    factNote: "힘줄과 결이 있는 편이라 오래 익힐수록 쓰기 좋은 쪽이다.",
+    usageNote: "찜, 국물요리, 수육류에 잘 맞는다.",
+    cautionNote: "구이로 바로 먹으면 질기게 느껴질 수 있다.",
+    cooking: ["찜", "국물요리", "수육"],
+    tags: ["쫄깃한 편", "국물용", "담백한 편"],
     alternatives: ["양지", "우둔"],
-    subtypes: [
-      { name: "아롱사태", note: "식감이 좋고 수육용으로 인기" },
-      { name: "장조림용 사태", note: "결이 살아 있어 찢어 먹기 좋음" },
-    ],
+    profile: { fat: 16, flavor: 74, tender: 42 },
   },
   {
-    id: "beef_udun",
+    id: "udun",
     meatType: "beef",
     name: "우둔",
     animal: "소",
-    short: "기름이 적고 담백해 다이어트나 육회용으로도 자주 쓰이는 부위",
+    short: "지방이 적고 담백한 쪽으로 많이 고르는 부위",
     location: "뒷다리 안쪽",
-    texture: "담백하고 결이 선명함",
-    fat: 10,
-    flavor: 58,
-    tenderness: 56,
-    price: "중간~저렴",
-    beginner: "중간",
-    cooking: ["볶음", "육회", "장조림"],
-    tags: ["저지방", "담백함", "실속형", "가성비"],
-    recommendFor: ["기름 적은 소고기 원하는 사람", "실속형 선택 원하는 사람"],
-    avoidFor: ["구이에서 진한 육즙을 기대하는 사람"],
-    alternatives: ["양지", "안심"],
-    subtypes: [
-      { name: "육회용 우둔", note: "담백하고 깔끔한 맛이 장점" },
-      { name: "볶음용 우둔", note: "얇게 썰면 활용도가 높음" },
-    ],
+    factNote: "뒷다리 계열로 비교적 지방이 적은 편으로 알려져 있다.",
+    usageNote: "볶음이나 얇게 쓰는 요리에 잘 맞는다.",
+    cautionNote: "육즙 중심의 구이를 기대하면 아쉬울 수 있다.",
+    cooking: ["볶음"],
+    tags: ["저지방", "담백한 편", "실속형"],
+    alternatives: ["안심", "양지"],
+    profile: { fat: 10, flavor: 56, tender: 54 },
+  },
+  {
+    id: "galbi_beef",
+    meatType: "beef",
+    name: "갈비",
+    animal: "소",
+    short: "찜, 구이, 양념요리에서 존재감이 큰 대표 부위",
+    location: "갈비뼈 주변",
+    factNote: "갈비는 구이와 찜류에 대표적으로 쓰이는 부위다.",
+    usageNote: "양념갈비, 갈비찜, 구이에 많이 활용된다.",
+    cautionNote: "손질 상태와 뼈 비중에 따라 체감이 달라질 수 있다.",
+    cooking: ["구이", "찜"],
+    tags: ["진한 맛", "양념요리", "대표부위"],
+    alternatives: ["등심", "양지"],
+    profile: { fat: 58, flavor: 86, tender: 66 },
+  },
+];
+
+const chickenCuts: MeatCut[] = [
+  {
+    id: "gaseumsal",
+    meatType: "chicken",
+    name: "가슴살",
+    animal: "닭",
+    short: "지방이 적고 담백한 쪽으로 많이 찾는 부위",
+    location: "가슴 부위",
+    factNote: "흉골 좌우에 붙어 있는 근육으로 설명되며 지방이 적은 편이다.",
+    usageNote: "튀김, 샐러드, 스테이크처럼 손질하기 쉬운 조리에 잘 맞는다.",
+    cautionNote: "과하게 익히면 퍽퍽하게 느껴질 수 있다.",
+    cooking: ["튀김", "볶음", "구이"],
+    tags: ["저지방", "담백한 편", "대중적"],
+    alternatives: ["안심", "넓적다리"],
+    profile: { fat: 10, flavor: 48, tender: 62 },
+  },
+  {
+    id: "ansim_chicken",
+    meatType: "chicken",
+    name: "안심",
+    animal: "닭",
+    short: "가슴살 안쪽에 붙어 있으며 부드럽게 쓰기 쉬운 부위",
+    location: "가슴살 안쪽",
+    factNote: "가슴살 안쪽 흉골을 따라 붙어 있는 근육으로 설명된다.",
+    usageNote: "튀김, 볶음, 간단한 반찬용으로 쓰기 좋다.",
+    cautionNote: "얇아 빨리 익는 편이라 과조리에 주의하는 게 좋다.",
+    cooking: ["튀김", "볶음"],
+    tags: ["부드러운 편", "저지방", "담백한 편"],
+    alternatives: ["가슴살", "넓적다리"],
+    profile: { fat: 8, flavor: 44, tender: 70 },
+  },
+  {
+    id: "dakdari",
+    meatType: "chicken",
+    name: "닭다리",
+    animal: "닭",
+    short: "지방과 단백질 균형이 좋아 선호도가 높은 편의 부위",
+    location: "다리 부위",
+    factNote: "다리 쪽은 가슴보다 진한 맛과 식감을 느끼기 쉬운 편이다.",
+    usageNote: "튀김, 구이, 양념요리에 잘 어울린다.",
+    cautionNote: "담백함만 찾는 경우에는 가슴살 쪽이 더 잘 맞을 수 있다.",
+    cooking: ["튀김", "구이"],
+    tags: ["인기부위", "고소한 편", "촉촉한 편"],
+    alternatives: ["넓적다리", "날개"],
+    profile: { fat: 44, flavor: 74, tender: 76 },
+  },
+  {
+    id: "neoljeokdari",
+    meatType: "chicken",
+    name: "넓적다리",
+    animal: "닭",
+    short: "닭다리 위쪽으로 살이 많고 촉촉하게 쓰기 쉬운 부위",
+    location: "허벅지 쪽",
+    factNote: "다리 계열 중 살이 많은 쪽으로 많이 구분된다.",
+    usageNote: "구이, 볶음, 덮밥류에 잘 어울린다.",
+    cautionNote: "껍질 포함 여부에 따라 기름짐 체감 차이가 난다.",
+    cooking: ["구이", "볶음"],
+    tags: ["촉촉한 편", "실속형", "풍미"],
+    alternatives: ["닭다리", "가슴살"],
+    profile: { fat: 40, flavor: 72, tender: 74 },
+  },
+  {
+    id: "nalgae",
+    meatType: "chicken",
+    name: "날개",
+    animal: "닭",
+    short: "살은 적지만 구이와 튀김에서 인기가 높은 부위",
+    location: "날개 부위",
+    factNote: "날개는 구이·튀김용으로 많이 소비되는 부위로 알려져 있다.",
+    usageNote: "튀김, 구이, 조림처럼 양념을 살리는 조리에 잘 맞는다.",
+    cautionNote: "먹을 수 있는 살 양은 다른 부위보다 적게 느껴질 수 있다.",
+    cooking: ["튀김", "구이"],
+    tags: ["양념요리", "간식용", "풍미"],
+    alternatives: ["닭다리", "넓적다리"],
+    profile: { fat: 46, flavor: 70, tender: 64 },
   },
 ];
 
 const comparisonPairsByMeat: Record<MeatType, { title: string; rows: [string, string][] }[]> = {
   pork: [
     {
-      title: "삼겹살 vs 목살",
+      title: "삼겹살 vs 목심",
       rows: [
-        ["더 고소한 쪽", "삼겹살"],
-        ["덜 느끼한 쪽", "목살"],
-        ["구이 실패 적은 쪽", "둘 다"],
-        ["다이어트에 더 나은 쪽", "목살"],
+        ["더 고소하게 느껴지기 쉬운 쪽", "삼겹살"],
+        ["조금 덜 무겁게 느껴지기 쉬운 쪽", "목심"],
+        ["구이 입문용", "둘 다 무난"],
+        ["담백한 쪽", "목심"],
       ],
     },
     {
-      title: "안심 vs 등심",
+      title: "등심 vs 안심",
       rows: [
-        ["더 부드러운 쪽", "안심"],
-        ["더 풍미 있는 쪽", "등심"],
-        ["돈가스용", "둘 다 가능"],
+        ["더 연한 쪽", "안심"],
+        ["활용도 넓은 쪽", "등심"],
+        ["튀김용 접근", "둘 다 가능"],
         ["더 담백한 쪽", "안심"],
-      ],
-    },
-    {
-      title: "앞다리살 vs 뒷다리살",
-      rows: [
-        ["더 무난한 쪽", "앞다리살"],
-        ["더 저렴한 쪽", "뒷다리살"],
-        ["볶음 활용도", "앞다리살"],
-        ["저지방 성향", "뒷다리살"],
       ],
     },
   ],
@@ -529,78 +429,91 @@ const comparisonPairsByMeat: Record<MeatType, { title: string; rows: [string, st
     {
       title: "등심 vs 채끝",
       rows: [
-        ["더 고소한 쪽", "등심"],
-        ["덜 느끼한 쪽", "채끝"],
-        ["스테이크 입문", "둘 다 좋음"],
-        ["균형형 선택", "채끝"],
-      ],
-    },
-    {
-      title: "안심 vs 부채살",
-      rows: [
-        ["더 부드러운 쪽", "안심"],
-        ["가성비 좋은 쪽", "부채살"],
-        ["저지방 성향", "안심"],
-        ["풍미 대비 실속", "부채살"],
+        ["대표 구이용", "등심"],
+        ["균형감 있는 쪽", "채끝"],
+        ["부드러운 식감 중심", "채끝"],
+        ["진한 풍미 느낌", "등심"],
       ],
     },
     {
       title: "양지 vs 사태",
       rows: [
-        ["국물 진한 쪽", "양지"],
-        ["쫄깃한 쪽", "사태"],
-        ["수육 활용", "둘 다 가능"],
-        ["오래 끓이는 요리", "둘 다 좋음"],
+        ["국물용 이미지", "양지"],
+        ["쫄깃한 편", "사태"],
+        ["오래 익히는 조리", "둘 다 잘 맞음"],
+        ["구이용", "둘 다 비추천"],
+      ],
+    },
+  ],
+  chicken: [
+    {
+      title: "가슴살 vs 안심",
+      rows: [
+        ["더 담백한 쪽", "둘 다 비슷"],
+        ["더 부드럽게 느껴지기 쉬운 쪽", "안심"],
+        ["샐러드·식단용", "가슴살"],
+        ["간단 반찬용", "안심"],
+      ],
+    },
+    {
+      title: "닭다리 vs 날개",
+      rows: [
+        ["살이 더 많은 쪽", "닭다리"],
+        ["간식·안주 느낌", "날개"],
+        ["튀김용 인기", "둘 다 높음"],
+        ["한 끼용 만족감", "닭다리"],
       ],
     },
   ],
 };
 
-const recommendationQuestions = {
-  cooking: ["구이", "볶음", "찜", "국물요리", "돈가스/튀김", "수육"],
-  texture: ["부드러운", "쫄깃한", "씹는 맛 있는", "상관없음"],
-  fat: ["담백한 게 좋음", "적당히", "고소하고 기름진 게 좋음"],
-  budget: ["가성비 위주", "보통", "가격 상관없음"],
-} as const;
+function getAllCutsByType(type: MeatType) {
+  if (type === "pork") return porkCuts;
+  if (type === "beef") return beefCuts;
+  return chickenCuts;
+}
 
-const defaultPrefs: Prefs = {
-  cooking: "구이",
-  texture: "부드러운",
-  fat: "적당히",
-  budget: "보통",
-};
+function getFatLabel(value: number) {
+  if (value <= 15) return "매우 담백한 편";
+  if (value <= 35) return "담백한 편";
+  if (value <= 60) return "중간 정도";
+  if (value <= 80) return "고소한 편";
+  return "기름진 편";
+}
+
+function getFlavorLabel(value: number) {
+  if (value <= 45) return "은은한 편";
+  if (value <= 65) return "무난한 편";
+  if (value <= 80) return "풍미가 있는 편";
+  return "풍미가 진한 편";
+}
+
+function getTenderLabel(value: number) {
+  if (value <= 45) return "단단한 편";
+  if (value <= 65) return "보통";
+  if (value <= 80) return "부드러운 편";
+  return "매우 부드러운 편";
+}
 
 function scoreCut(cut: MeatCut, prefs: Prefs) {
   let score = 0;
 
-  if (prefs.cooking === "돈가스/튀김") {
-    if (cut.cooking.includes("돈가스/튀김")) score += 35;
-    if (cut.cooking.includes("튀김류")) score += 24;
-  } else if (cut.cooking.includes(prefs.cooking)) {
-    score += 35;
-  }
-
-  if (prefs.texture === "부드러운") score += cut.tenderness * 0.35;
-  if (prefs.texture === "쫄깃한") score += cut.tags.includes("쫄깃함") ? 28 : 0;
-  if (prefs.texture === "씹는 맛 있는") score += cut.short.includes("쫄깃") || cut.texture.includes("쫄깃") ? 24 : 6;
+  if (cut.cooking.includes(prefs.cooking)) score += 35;
+  if (prefs.texture === "부드러운 편") score += cut.profile.tender * 0.35;
+  if (prefs.texture === "쫄깃한 편") score += cut.tags.some((t) => t.includes("쫄깃")) ? 26 : 8;
+  if (prefs.texture === "담백한 편") score += (100 - cut.profile.fat) * 0.25;
   if (prefs.texture === "상관없음") score += 10;
 
-  if (prefs.fat === "담백한 게 좋음") score += (100 - cut.fat) * 0.28;
-  if (prefs.fat === "적당히") score += 26 - Math.abs(55 - cut.fat) * 0.25;
-  if (prefs.fat === "고소하고 기름진 게 좋음") score += cut.fat * 0.28;
+  if (prefs.fat === "담백한 쪽") score += (100 - cut.profile.fat) * 0.28;
+  if (prefs.fat === "중간") score += 25 - Math.abs(50 - cut.profile.fat) * 0.2;
+  if (prefs.fat === "고소한 쪽") score += cut.profile.fat * 0.28;
 
-  if (prefs.budget === "가성비 위주") {
-    if (cut.price.includes("저렴")) score += 30;
-    else if (cut.price.includes("중간")) score += 15;
+  if (prefs.budget === "가성비 우선") {
+    if (cut.tags.includes("실속형") || cut.tags.includes("가성비")) score += 24;
+    else score += 8;
   }
-  if (prefs.budget === "보통") {
-    if (cut.price.includes("중간")) score += 20;
-    else score += 10;
-  }
-  if (prefs.budget === "가격 상관없음") {
-    if (cut.price.includes("비싼")) score += 14;
-    score += 10;
-  }
+  if (prefs.budget === "보통") score += 14;
+  if (prefs.budget === "가격보다 용도") score += 18;
 
   return Math.round(score);
 }
@@ -608,79 +521,102 @@ function scoreCut(cut: MeatCut, prefs: Prefs) {
 function getRecommendationReasons(cut: MeatCut, prefs: Prefs) {
   const reasons: string[] = [];
 
-  if (prefs.cooking === "구이" && cut.cooking.includes("구이")) reasons.push("구이용으로 잘 맞음");
-  if (prefs.cooking === "찜" && cut.cooking.includes("찜")) reasons.push("오래 익히는 요리에 적합");
-  if (prefs.cooking === "볶음" && cut.cooking.includes("볶음")) reasons.push("볶음 요리 활용도 높음");
-  if (prefs.cooking === "수육" && cut.cooking.includes("수육")) reasons.push("수육용으로 무난함");
-  if (prefs.cooking === "국물요리" && cut.cooking.includes("국물요리")) reasons.push("국물 맛이 잘 남");
-  if (prefs.cooking === "돈가스/튀김" && cut.cooking.includes("돈가스/튀김")) reasons.push("튀김/돈가스용으로 적합");
-
-  if (prefs.texture === "부드러운" && cut.tenderness >= 70) reasons.push("부드러운 식감과 잘 맞음");
-  if (prefs.texture === "쫄깃한" && cut.tags.includes("쫄깃함")) reasons.push("쫄깃한 식감이 살아 있음");
-  if (prefs.texture === "씹는 맛 있는" && (cut.tags.includes("쫄깃함") || cut.texture.includes("탄탄") || cut.texture.includes("씹"))) reasons.push("씹는 맛이 괜찮음");
-
-  if (prefs.fat === "담백한 게 좋음" && cut.fat <= 40) reasons.push("지방이 비교적 적은 편");
-  if (prefs.fat === "적당히" && cut.fat >= 35 && cut.fat <= 70) reasons.push("지방과 살코기 밸런스가 적당함");
-  if (prefs.fat === "고소하고 기름진 게 좋음" && cut.fat >= 60) reasons.push("고소하고 진한 맛이 강함");
-
-  if (prefs.budget === "가성비 위주" && cut.price.includes("저렴")) reasons.push("가성비 선택에 유리함");
-  if (prefs.budget === "보통" && cut.price.includes("중간")) reasons.push("부담 적은 가격대");
-  if (prefs.budget === "가격 상관없음" && cut.price.includes("비싼")) reasons.push("풍미 중심 선택에 어울림");
+  if (cut.cooking.includes(prefs.cooking)) reasons.push(`"${prefs.cooking}" 용도와 잘 맞는 편`);
+  if (prefs.texture === "부드러운 편" && cut.profile.tender >= 70) reasons.push("부드러운 식감 쪽에 가까움");
+  if (prefs.texture === "쫄깃한 편" && cut.tags.some((t) => t.includes("쫄깃"))) reasons.push("쫄깃한 식감 쪽으로 보기 쉬움");
+  if (prefs.texture === "담백한 편" && cut.profile.fat <= 35) reasons.push("상대적으로 담백한 쪽");
+  if (prefs.fat === "고소한 쪽" && cut.profile.fat >= 55) reasons.push("고소하게 느껴지기 쉬운 편");
+  if (prefs.budget === "가성비 우선" && (cut.tags.includes("실속형") || cut.tags.includes("가성비"))) reasons.push("실속형 선택지로 보기 좋음");
 
   return reasons.slice(0, 3);
 }
 
-function StatBar({ label, value }: { label: string; value: number }) {
+function InfoPill({ title, value }: { title: string; value: string }) {
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between text-sm text-slate-600">
-        <span>{label}</span>
-        <span className="font-medium text-slate-900">{value}%</span>
-      </div>
-      <Progress value={value} className="h-2" />
+    <div className="rounded-2xl bg-slate-50 p-4">
+      <div className="text-sm text-slate-500">{title}</div>
+      <div className="mt-1 font-semibold text-slate-900">{value}</div>
     </div>
   );
 }
 
-function GrillBadge({ cut, dark = false }: { cut: MeatCut; dark?: boolean }) {
-  if (!cut.cooking.includes("구이") || !cut.grillType) return null;
+function ProfileCard({ cut }: { cut: MeatCut }) {
+  return (
+    <div className="grid gap-4 sm:grid-cols-3">
+      <InfoPill title="지방 느낌" value={getFatLabel(cut.profile.fat)} />
+      <InfoPill title="풍미 느낌" value={getFlavorLabel(cut.profile.flavor)} />
+      <InfoPill title="식감 느낌" value={getTenderLabel(cut.profile.tender)} />
+    </div>
+  );
+}
 
-  const baseClass = dark ? "rounded-full border-0 bg-white/15 text-white" : "rounded-full bg-orange-50 text-orange-700";
+function Sidebar({
+  meatType,
+  onChange,
+}: {
+  meatType: MeatType;
+  onChange: (type: MeatType) => void;
+}) {
+  return (
+    <aside className="w-full lg:sticky lg:top-6 lg:h-fit">
+      <Card className="overflow-hidden rounded-[2rem] border-orange-100 bg-white/90 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-xl">고기 선택</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {(["pork", "beef", "chicken"] as MeatType[]).map((type) => {
+            const active = meatType === type;
+            const icon =
+              type === "pork" ? (
+                <PiggyBank className="h-5 w-5" />
+              ) : type === "beef" ? (
+                <Beef className="h-5 w-5" />
+              ) : (
+                <Flame className="h-5 w-5" />
+              );
 
-  if (cut.grillType === "둘 다") {
-    return (
-      <>
-        <Badge className={baseClass}>🔥 숯구이 (풍미↑)</Badge>
-        <Badge className={baseClass}>🔥 불판구이 (편의↑)</Badge>
-      </>
-    );
-  }
+            return (
+              <button
+                key={type}
+                type="button"
+                onClick={() => onChange(type)}
+                className={`flex w-full items-center gap-3 rounded-2xl border px-4 py-4 text-left transition ${
+                  active ? "border-orange-200 bg-orange-50" : "border-slate-200 bg-white hover:border-orange-200 hover:bg-orange-50/50"
+                }`}
+              >
+                <div className={`rounded-2xl p-3 ${active ? "bg-orange-500 text-white" : "bg-slate-100 text-slate-700"}`}>{icon}</div>
+                <div>
+                  <div className="font-semibold text-slate-900">{meatMeta[type].label}</div>
+                  <div className="text-sm text-slate-500">{meatMeta[type].sideDesc}</div>
+                </div>
+              </button>
+            );
+          })}
 
-  if (cut.grillType === "숯구이") {
-    return <Badge className={baseClass}>🔥 숯구이 (풍미↑)</Badge>;
-  }
-
-  return <Badge className={baseClass}>🔥 불판구이 (편의↑)</Badge>;
+          <div className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-600">
+            이 버전은 <span className="font-semibold text-slate-900">정확한 숫자처럼 보이는 표현</span>을 줄이고,
+            <br />
+            <span className="font-semibold text-slate-900">위치 · 특징 · 대표 용도</span> 중심으로 보수적으로 정리했습니다.
+          </div>
+        </CardContent>
+      </Card>
+    </aside>
+  );
 }
 
 function PorkMap({ selected, onSelect }: { selected: MeatCut; onSelect: (cut: MeatCut) => void }) {
-  const [hoverId, setHoverId] = useState<string | null>(null);
-
-  const mapItems = {
-    hangjeongsal: { x: 180, y: 120, labelX: 70, labelY: 60, label: "항정살", area: { cx: 170, cy: 120, rx: 40, ry: 28 } },
-    moksal: { x: 260, y: 95, labelX: 260, labelY: 40, label: "목살", area: { cx: 260, cy: 100, rx: 55, ry: 35 } },
-    galbi: { x: 320, y: 130, labelX: 330, labelY: 80, label: "갈비", area: { cx: 320, cy: 140, rx: 70, ry: 45 } },
-    deungsim: { x: 380, y: 95, labelX: 400, labelY: 40, label: "등심", area: { cx: 380, cy: 100, rx: 70, ry: 40 } },
-    ansim: { x: 455, y: 125, labelX: 520, labelY: 70, label: "안심", area: { cx: 450, cy: 130, rx: 55, ry: 40 } },
-    apdari: { x: 280, y: 170, labelX: 90, labelY: 300, label: "앞다리", area: { cx: 250, cy: 200, rx: 60, ry: 60 } },
-    samgyeopsal: { x: 420, y: 210, labelX: 430, labelY: 330, label: "삼겹살", area: { cx: 420, cy: 220, rx: 90, ry: 55 } },
-    galmaegi: { x: 340, y: 260, labelX: 360, labelY: 340, label: "갈매기살", area: { cx: 350, cy: 260, rx: 60, ry: 40 } },
-    dwitdari: { x: 530, y: 250, labelX: 580, labelY: 330, label: "뒷다리", area: { cx: 520, cy: 250, rx: 60, ry: 70 } },
-    satae: { x: 500, y: 230, labelX: 520, labelY: 280, label: "사태", area: { cx: 500, cy: 230, rx: 40, ry: 40 } },
-  } as const;
+  const items = [
+    { id: "moksim", label: "목심", left: "32%", top: "18%" },
+    { id: "deungsim_pork", label: "등심", left: "58%", top: "18%" },
+    { id: "ansim_pork", label: "안심", left: "73%", top: "28%" },
+    { id: "apdari", label: "앞다리", left: "25%", top: "58%" },
+    { id: "samgyeopsal", label: "삼겹살", left: "61%", top: "70%" },
+    { id: "galbi_pork", label: "갈비", left: "48%", top: "35%" },
+    { id: "satae_pork", label: "사태", left: "78%", top: "64%" },
+  ];
 
   return (
-    <div className="relative mx-auto w-full max-w-[640px] rounded-3xl border border-orange-100 bg-white p-4 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+    <div className="relative mx-auto w-full max-w-[640px] rounded-3xl border border-orange-100 bg-white p-4">
       <div className="relative overflow-hidden rounded-2xl bg-[#f3f4f6]">
         <svg viewBox="0 0 640 360" className="h-auto w-full">
           <rect width="640" height="360" fill="#f3f4f6" />
@@ -688,45 +624,26 @@ function PorkMap({ selected, onSelect }: { selected: MeatCut; onSelect: (cut: Me
           <circle cx="140" cy="160" r="55" fill="#d1d5db" />
           <circle cx="110" cy="110" r="18" fill="#d1d5db" />
           <circle cx="170" cy="110" r="18" fill="#d1d5db" />
-          <ellipse cx="110" cy="170" rx="18" ry="12" fill="#cbd5e1" />
           <rect x="260" y="260" width="16" height="60" fill="#d1d5db" />
           <rect x="300" y="260" width="16" height="60" fill="#d1d5db" />
           <rect x="420" y="260" width="16" height="60" fill="#d1d5db" />
           <rect x="460" y="260" width="16" height="60" fill="#d1d5db" />
-          {Object.entries(mapItems).map(([id, item]) => {
-            const isActive = selected.id === id || hoverId === id;
-            return <ellipse key={id} cx={item.area.cx} cy={item.area.cy} rx={item.area.rx} ry={item.area.ry} fill="#f59e0b" opacity={isActive ? 0.35 : 0} />;
-          })}
         </svg>
 
-        <svg viewBox="0 0 640 360" className="absolute inset-0 h-full w-full">
-          <g stroke="#f59e0b" fill="#f59e0b" strokeWidth="2">
-            {Object.entries(mapItems).map(([id, item]) => {
-              const active = selected.id === id || hoverId === id;
-              const midY = item.labelY < item.y ? item.labelY + 16 : item.labelY - 16;
-              return (
-                <g key={id} opacity={active ? 1 : 0.4}>
-                  <circle cx={item.x} cy={item.y} r={active ? 7 : 5} />
-                  <path d={`M ${item.x} ${item.y} L ${item.x} ${midY} L ${item.labelX} ${midY}`} fill="none" />
-                </g>
-              );
-            })}
-          </g>
-        </svg>
-
-        {Object.entries(mapItems).map(([id, item]) => {
-          const active = selected.id === id;
+        {items.map((item) => {
+          const active = selected.id === item.id;
           return (
             <button
-              key={id}
-              onMouseEnter={() => setHoverId(id)}
-              onMouseLeave={() => setHoverId(null)}
+              key={item.id}
+              type="button"
               onClick={() => {
-                const matched = porkCuts.find((c) => c.id === id);
-                if (matched) onSelect(matched);
+                const cut = porkCuts.find((c) => c.id === item.id);
+                if (cut) onSelect(cut);
               }}
-              className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full px-3 py-1 text-xs font-bold shadow-sm transition sm:text-sm ${active ? "bg-orange-500 text-white ring-4 ring-orange-200" : "border border-slate-300 bg-white text-slate-900 hover:border-orange-400 hover:text-orange-600"}`}
-              style={{ left: `${(item.labelX / 640) * 100}%`, top: `${(item.labelY / 360) * 100}%` }}
+              className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full px-3 py-1 text-xs font-bold shadow-sm transition sm:text-sm ${
+                active ? "bg-orange-500 text-white ring-4 ring-orange-200" : "border border-slate-300 bg-white text-slate-900 hover:border-orange-400 hover:text-orange-600"
+              }`}
+              style={{ left: item.left, top: item.top }}
             >
               {item.label}
             </button>
@@ -738,21 +655,19 @@ function PorkMap({ selected, onSelect }: { selected: MeatCut; onSelect: (cut: Me
 }
 
 function BeefMap({ selected, onSelect }: { selected: MeatCut; onSelect: (cut: MeatCut) => void }) {
-  const [hoverId, setHoverId] = useState<string | null>(null);
-
-  const mapItems = {
-    beef_deungsim: { x: 370, y: 115, labelX: 430, labelY: 50, label: "등심", area: { cx: 370, cy: 120, rx: 90, ry: 42 } },
-    beef_chaekkeut: { x: 470, y: 130, labelX: 555, labelY: 80, label: "채끝", area: { cx: 470, cy: 135, rx: 55, ry: 42 } },
-    beef_ansim: { x: 415, y: 165, labelX: 525, labelY: 150, label: "안심", area: { cx: 415, cy: 170, rx: 70, ry: 35 } },
-    beef_buchaesal: { x: 250, y: 155, labelX: 100, labelY: 90, label: "부채살", area: { cx: 250, cy: 160, rx: 65, ry: 45 } },
-    beef_chimasal: { x: 360, y: 220, labelX: 375, labelY: 320, label: "치마살", area: { cx: 355, cy: 220, rx: 85, ry: 38 } },
-    beef_yangji: { x: 290, y: 235, labelX: 115, labelY: 300, label: "양지", area: { cx: 290, cy: 235, rx: 75, ry: 42 } },
-    beef_satae: { x: 520, y: 245, labelX: 565, labelY: 310, label: "사태", area: { cx: 515, cy: 245, rx: 50, ry: 62 } },
-    beef_udun: { x: 520, y: 190, labelX: 575, labelY: 240, label: "우둔", area: { cx: 515, cy: 185, rx: 55, ry: 55 } },
-  } as const;
+  const items = [
+    { id: "deungsim_beef", label: "등심", left: "58%", top: "22%" },
+    { id: "chaekkeut", label: "채끝", left: "76%", top: "28%" },
+    { id: "ansim_beef", label: "안심", left: "66%", top: "40%" },
+    { id: "buchaesal", label: "부채살", left: "28%", top: "40%" },
+    { id: "yangji", label: "양지", left: "36%", top: "70%" },
+    { id: "satae_beef", label: "사태", left: "79%", top: "72%" },
+    { id: "udun", label: "우둔", left: "80%", top: "54%" },
+    { id: "galbi_beef", label: "갈비", left: "47%", top: "36%" },
+  ];
 
   return (
-    <div className="relative mx-auto w-full max-w-[640px] rounded-3xl border border-orange-100 bg-white p-4 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+    <div className="relative mx-auto w-full max-w-[640px] rounded-3xl border border-orange-100 bg-white p-4">
       <div className="relative overflow-hidden rounded-2xl bg-[#f3f4f6]">
         <svg viewBox="0 0 640 360" className="h-auto w-full">
           <rect width="640" height="360" fill="#f3f4f6" />
@@ -764,41 +679,22 @@ function BeefMap({ selected, onSelect }: { selected: MeatCut; onSelect: (cut: Me
           <rect x="295" y="265" width="16" height="58" fill="#d1d5db" />
           <rect x="435" y="265" width="16" height="58" fill="#d1d5db" />
           <rect x="490" y="265" width="16" height="58" fill="#d1d5db" />
-          <path d="M586 190 Q620 175 604 145" stroke="#cbd5e1" strokeWidth="8" fill="none" strokeLinecap="round" />
-          {Object.entries(mapItems).map(([id, item]) => {
-            const isActive = selected.id === id || hoverId === id;
-            return <ellipse key={id} cx={item.area.cx} cy={item.area.cy} rx={item.area.rx} ry={item.area.ry} fill="#f59e0b" opacity={isActive ? 0.35 : 0} />;
-          })}
         </svg>
 
-        <svg viewBox="0 0 640 360" className="absolute inset-0 h-full w-full">
-          <g stroke="#f59e0b" fill="#f59e0b" strokeWidth="2">
-            {Object.entries(mapItems).map(([id, item]) => {
-              const active = selected.id === id || hoverId === id;
-              const midY = item.labelY < item.y ? item.labelY + 16 : item.labelY - 16;
-              return (
-                <g key={id} opacity={active ? 1 : 0.4}>
-                  <circle cx={item.x} cy={item.y} r={active ? 7 : 5} />
-                  <path d={`M ${item.x} ${item.y} L ${item.x} ${midY} L ${item.labelX} ${midY}`} fill="none" />
-                </g>
-              );
-            })}
-          </g>
-        </svg>
-
-        {Object.entries(mapItems).map(([id, item]) => {
-          const active = selected.id === id;
+        {items.map((item) => {
+          const active = selected.id === item.id;
           return (
             <button
-              key={id}
-              onMouseEnter={() => setHoverId(id)}
-              onMouseLeave={() => setHoverId(null)}
+              key={item.id}
+              type="button"
               onClick={() => {
-                const matched = beefCuts.find((c) => c.id === id);
-                if (matched) onSelect(matched);
+                const cut = beefCuts.find((c) => c.id === item.id);
+                if (cut) onSelect(cut);
               }}
-              className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full px-3 py-1 text-xs font-bold shadow-sm transition sm:text-sm ${active ? "bg-orange-500 text-white ring-4 ring-orange-200" : "border border-slate-300 bg-white text-slate-900 hover:border-orange-400 hover:text-orange-600"}`}
-              style={{ left: `${(item.labelX / 640) * 100}%`, top: `${(item.labelY / 360) * 100}%` }}
+              className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full px-3 py-1 text-xs font-bold shadow-sm transition sm:text-sm ${
+                active ? "bg-orange-500 text-white ring-4 ring-orange-200" : "border border-slate-300 bg-white text-slate-900 hover:border-orange-400 hover:text-orange-600"
+              }`}
+              style={{ left: item.left, top: item.top }}
             >
               {item.label}
             </button>
@@ -809,15 +705,74 @@ function BeefMap({ selected, onSelect }: { selected: MeatCut; onSelect: (cut: Me
   );
 }
 
-function MeatMap({ meatType, selected, onSelect }: { meatType: MeatType; selected: MeatCut; onSelect: (cut: MeatCut) => void }) {
-  if (meatType === "beef") {
-    return <BeefMap selected={selected} onSelect={onSelect} />;
-  }
+function ChickenMap({ selected, onSelect }: { selected: MeatCut; onSelect: (cut: MeatCut) => void }) {
+  const items = [
+    { id: "gaseumsal", label: "가슴살", left: "50%", top: "38%" },
+    { id: "ansim_chicken", label: "안심", left: "58%", top: "48%" },
+    { id: "nalgae", label: "날개", left: "28%", top: "36%" },
+    { id: "dakdari", label: "닭다리", left: "68%", top: "72%" },
+    { id: "neoljeokdari", label: "넓적다리", left: "50%", top: "72%" },
+  ];
 
-  return <PorkMap selected={selected} onSelect={onSelect} />;
+  return (
+    <div className="relative mx-auto w-full max-w-[640px] rounded-3xl border border-orange-100 bg-white p-4">
+      <div className="relative overflow-hidden rounded-2xl bg-[#f3f4f6]">
+        <svg viewBox="0 0 640 360" className="h-auto w-full">
+          <rect width="640" height="360" fill="#f3f4f6" />
+          <ellipse cx="360" cy="180" rx="140" ry="100" fill="#d1d5db" />
+          <circle cx="220" cy="135" r="45" fill="#d1d5db" />
+          <circle cx="248" cy="118" r="8" fill="#94a3b8" />
+          <path d="M185 130 L150 120 L185 145 Z" fill="#fbbf24" />
+          <ellipse cx="195" cy="190" rx="55" ry="22" fill="#d1d5db" />
+          <ellipse cx="255" cy="255" rx="22" ry="58" fill="#d1d5db" transform="rotate(15 255 255)" />
+          <ellipse cx="360" cy="270" rx="22" ry="64" fill="#d1d5db" transform="rotate(-10 360 270)" />
+        </svg>
+
+        {items.map((item) => {
+          const active = selected.id === item.id;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => {
+                const cut = chickenCuts.find((c) => c.id === item.id);
+                if (cut) onSelect(cut);
+              }}
+              className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full px-3 py-1 text-xs font-bold shadow-sm transition sm:text-sm ${
+                active ? "bg-orange-500 text-white ring-4 ring-orange-200" : "border border-slate-300 bg-white text-slate-900 hover:border-orange-400 hover:text-orange-600"
+              }`}
+              style={{ left: item.left, top: item.top }}
+            >
+              {item.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
-function CutCard({ cut, onSelect }: { cut: MeatCut; onSelect: (cut: MeatCut) => void }) {
+function MeatMap({
+  meatType,
+  selected,
+  onSelect,
+}: {
+  meatType: MeatType;
+  selected: MeatCut;
+  onSelect: (cut: MeatCut) => void;
+}) {
+  if (meatType === "pork") return <PorkMap selected={selected} onSelect={onSelect} />;
+  if (meatType === "beef") return <BeefMap selected={selected} onSelect={onSelect} />;
+  return <ChickenMap selected={selected} onSelect={onSelect} />;
+}
+
+function CutCard({
+  cut,
+  onSelect,
+}: {
+  cut: MeatCut;
+  onSelect: (cut: MeatCut) => void;
+}) {
   return (
     <Card className="overflow-hidden rounded-3xl border-orange-100 bg-white/90 shadow-[0_10px_30px_rgba(15,23,42,0.06)] transition hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(15,23,42,0.10)]">
       <CardContent className="p-5">
@@ -825,6 +780,7 @@ function CutCard({ cut, onSelect }: { cut: MeatCut; onSelect: (cut: MeatCut) => 
           <h3 className="text-lg font-bold text-slate-900">{cut.name}</h3>
           <p className="mt-1 text-sm text-slate-600">{cut.short}</p>
         </div>
+
         <div className="mb-4 flex flex-wrap gap-2">
           {cut.tags.map((tag) => (
             <Badge key={tag} variant="outline" className="rounded-full border-orange-200">
@@ -832,20 +788,12 @@ function CutCard({ cut, onSelect }: { cut: MeatCut; onSelect: (cut: MeatCut) => 
             </Badge>
           ))}
         </div>
-        <div className="mb-5 grid grid-cols-3 gap-3 text-center text-sm">
-          <div className="rounded-2xl bg-slate-50 p-3">
-            <div className="text-slate-500">지방감</div>
-            <div className="mt-1 font-semibold text-slate-900">{cut.fat}%</div>
-          </div>
-          <div className="rounded-2xl bg-slate-50 p-3">
-            <div className="text-slate-500">풍미</div>
-            <div className="mt-1 font-semibold text-slate-900">{cut.flavor}%</div>
-          </div>
-          <div className="rounded-2xl bg-slate-50 p-3">
-            <div className="text-slate-500">부드러움</div>
-            <div className="mt-1 font-semibold text-slate-900">{cut.tenderness}%</div>
-          </div>
+
+        <div className="mb-5 space-y-3">
+          <InfoPill title="지방 느낌" value={getFatLabel(cut.profile.fat)} />
+          <InfoPill title="대표 용도" value={cut.cooking.join(", ")} />
         </div>
+
         <Button className="w-full rounded-2xl bg-orange-500 text-white hover:bg-orange-600" onClick={() => onSelect(cut)}>
           자세히 보기
           <ChevronRight className="ml-1 h-4 w-4" />
@@ -866,7 +814,11 @@ function RecommendationPanel({
 }) {
   const results: RecommendationCut[] = useMemo(() => {
     return cuts
-      .map((cut) => ({ ...cut, score: scoreCut(cut, prefs), reasons: getRecommendationReasons(cut, prefs) }))
+      .map((cut) => ({
+        ...cut,
+        score: scoreCut(cut, prefs),
+        reasons: getRecommendationReasons(cut, prefs),
+      }))
       .sort((a, b) => b.score - a.score)
       .slice(0, 3);
   }, [cuts, prefs]);
@@ -880,7 +832,7 @@ function RecommendationPanel({
             <Button
               type="button"
               variant="outline"
-              className="rounded-full border-orange-200 px-4 py-2 text-sm font-medium text-orange-600 transition hover:border-orange-300 hover:bg-orange-50"
+              className="rounded-full border-orange-200 px-4 py-2 text-sm font-medium text-orange-600 hover:border-orange-300 hover:bg-orange-50"
               onClick={() => setPrefs(defaultPrefs)}
             >
               초기화
@@ -894,9 +846,9 @@ function RecommendationPanel({
               <div key={key}>
                 <div className="mb-3 text-sm font-semibold text-slate-800">
                   {key === "cooking" && "어떻게 먹을 건가요?"}
-                  {key === "texture" && "어떤 식감을 원하나요?"}
-                  {key === "fat" && "기름진 정도는 어느 쪽이 좋나요?"}
-                  {key === "budget" && "예산은 어느 정도인가요?"}
+                  {key === "texture" && "어떤 느낌을 원하나요?"}
+                  {key === "fat" && "지방감은 어느 쪽이 좋나요?"}
+                  {key === "budget" && "예산 기준은 어떻게 보나요?"}
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {options.map((option) => {
@@ -932,7 +884,7 @@ function RecommendationPanel({
                   <Badge className="rounded-full bg-orange-500 text-white hover:bg-orange-500">TOP {idx + 1}</Badge>
                   <div className="font-bold text-slate-900">{cut.name}</div>
                 </div>
-                <div className="text-sm font-semibold text-slate-600">적합도 {cut.score}</div>
+                <div className="text-sm font-semibold text-slate-600">추천 참고용</div>
               </div>
               <p className="mb-3 text-sm text-slate-600">{cut.short}</p>
               <div className="mb-3 flex flex-wrap gap-2">
@@ -941,10 +893,9 @@ function RecommendationPanel({
                     {item}
                   </Badge>
                 ))}
-                <GrillBadge cut={cut} />
               </div>
               {cut.reasons.length > 0 && (
-                <div className="mb-3 flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2">
                   {cut.reasons.map((reason) => (
                     <Badge key={reason} className="rounded-full border-0 bg-slate-100 text-slate-700 hover:bg-slate-100">
                       {reason}
@@ -960,83 +911,24 @@ function RecommendationPanel({
   );
 }
 
-function Sidebar({
-  meatType,
-  setMeatType,
-}: {
-  meatType: MeatType;
-  setMeatType: (type: MeatType) => void;
-}) {
-  return (
-    <aside className="w-full lg:sticky lg:top-6 lg:h-fit">
-      <Card className="overflow-hidden rounded-[2rem] border-orange-100 bg-white/90 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-xl">고기 선택</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <button
-            type="button"
-            onClick={() => setMeatType("pork")}
-            className={`flex w-full items-center gap-3 rounded-2xl border px-4 py-4 text-left transition ${
-              meatType === "pork"
-                ? "border-orange-200 bg-orange-50"
-                : "border-slate-200 bg-white hover:border-orange-200 hover:bg-orange-50/50"
-            }`}
-          >
-            <div className={`rounded-2xl p-3 ${meatType === "pork" ? "bg-orange-500 text-white" : "bg-slate-100 text-slate-700"}`}>
-              <PiggyBank className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="font-semibold text-slate-900">돼지고기</div>
-              <div className="text-sm text-slate-500">삼겹살, 목살, 항정살 등</div>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setMeatType("beef")}
-            className={`flex w-full items-center gap-3 rounded-2xl border px-4 py-4 text-left transition ${
-              meatType === "beef"
-                ? "border-orange-200 bg-orange-50"
-                : "border-slate-200 bg-white hover:border-orange-200 hover:bg-orange-50/50"
-            }`}
-          >
-            <div className={`rounded-2xl p-3 ${meatType === "beef" ? "bg-orange-500 text-white" : "bg-slate-100 text-slate-700"}`}>
-              <Beef className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="font-semibold text-slate-900">소고기</div>
-              <div className="text-sm text-slate-500">등심, 채끝, 안심, 양지 등</div>
-            </div>
-          </button>
-
-          <div className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-600">
-            지금은 <span className="font-semibold text-slate-900">{meatType === "pork" ? "돼지고기" : "소고기"}</span> 모드입니다.
-            <br />
-            왼쪽에서 고기를 바꾸면 오른쪽 지도, 추천, 부위 목록이 같이 바뀝니다.
-          </div>
-        </CardContent>
-      </Card>
-    </aside>
-  );
-}
-
 function DetailView({
   meatType,
   selectedCut,
   setSelectedCut,
   goHome,
+  changeMeatType,
 }: {
   meatType: MeatType;
   selectedCut: MeatCut;
   setSelectedCut: (cut: MeatCut) => void;
   goHome: () => void;
+  changeMeatType: (type: MeatType) => void;
 }) {
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(251,146,60,0.10),_transparent_30%),linear-gradient(to_bottom,_#f8fafc,_#ffffff,_#f1f5f9)] text-slate-900">
       <section className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6 lg:px-8">
         <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
-          <Sidebar meatType={meatType} setMeatType={() => {}} />
+          <Sidebar meatType={meatType} onChange={changeMeatType} />
 
           <div>
             <div className="mb-6 flex items-center justify-between gap-4">
@@ -1055,25 +947,11 @@ function DetailView({
                   <MeatMap meatType={meatType} selected={selectedCut} onSelect={setSelectedCut} />
                   <p className="mt-4 text-sm text-slate-600">지도의 부위를 누르면 상세 정보가 바뀝니다.</p>
 
-                  <div className="mt-6 overflow-hidden rounded-2xl border border-orange-100 bg-white">
-                    <div className="aspect-[4/3] w-full bg-[linear-gradient(135deg,#fff7ed,#ffedd5,#fed7aa)] p-6">
-                      <div className="flex h-full flex-col justify-between rounded-2xl border border-orange-200/70 bg-white/60 p-5 backdrop-blur">
-                        <div>
-                          <div className="text-xs font-semibold uppercase tracking-[0.2em] text-orange-500">Meat Photo</div>
-                          <div className="mt-2 text-2xl font-bold text-slate-900">{selectedCut.name}</div>
-                          <p className="mt-2 max-w-xs text-sm leading-6 text-slate-600">
-                            실제 고기 사진이 들어갈 자리입니다. 현재는 상세 페이지 레이아웃 확인용 플레이스홀더입니다.
-                          </p>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {selectedCut.tags.slice(0, 3).map((tag) => (
-                            <Badge key={tag} className="rounded-full border-0 bg-orange-500 text-white hover:bg-orange-500">
-                              #{tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
+                  <div className="mt-6 rounded-2xl border border-orange-100 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
+                    <div className="font-semibold text-slate-900">정보 안내</div>
+                    이 페이지는 부위의 <span className="font-medium">위치, 특징, 대표 용도</span> 중심으로 요약했습니다.
+                    <br />
+                    품종, 손질 상태, 두께, 조리 시간에 따라 체감은 달라질 수 있습니다.
                   </div>
                 </CardContent>
               </Card>
@@ -1096,87 +974,35 @@ function DetailView({
                   </div>
 
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="rounded-2xl bg-slate-50 p-4">
-                      <div className="text-sm text-slate-500">위치</div>
-                      <div className="mt-1 font-semibold text-slate-900">{selectedCut.location}</div>
-                    </div>
-                    <div className="rounded-2xl bg-slate-50 p-4">
-                      <div className="text-sm text-slate-500">식감</div>
-                      <div className="mt-1 font-semibold text-slate-900">{selectedCut.texture}</div>
-                    </div>
-                    <div className="rounded-2xl bg-slate-50 p-4">
-                      <div className="text-sm text-slate-500">가격 느낌</div>
-                      <div className="mt-1 font-semibold text-slate-900">{selectedCut.price}</div>
-                    </div>
-                    <div className="rounded-2xl bg-slate-50 p-4">
-                      <div className="text-sm text-slate-500">초보 추천도</div>
-                      <div className="mt-1 font-semibold text-slate-900">{selectedCut.beginner}</div>
-                    </div>
+                    <InfoPill title="위치" value={selectedCut.location} />
+                    <InfoPill title="대표 용도" value={selectedCut.cooking.join(", ")} />
                   </div>
 
-                  <div className="space-y-4">
-                    <StatBar label="지방감" value={selectedCut.fat} />
-                    <StatBar label="풍미" value={selectedCut.flavor} />
-                    <StatBar label="부드러움" value={selectedCut.tenderness} />
-                  </div>
+                  <ProfileCard cut={selectedCut} />
 
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div>
-                      <div className="mb-2 text-sm font-semibold text-slate-800">추천 요리</div>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedCut.cooking.map((item) => (
-                          <Badge key={item} className="rounded-full bg-orange-500 text-white hover:bg-orange-500">
-                            {item}
-                          </Badge>
-                        ))}
-                        <GrillBadge cut={selectedCut} />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="mb-2 text-sm font-semibold text-slate-800">대체 부위</div>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedCut.alternatives.map((item) => (
-                          <Badge key={item} variant="outline" className="rounded-full border-orange-200">
-                            {item}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
+                  <div className="rounded-2xl border border-orange-100 p-4">
+                    <div className="mb-2 text-sm font-semibold text-slate-800">대표 특징</div>
+                    <p className="text-sm leading-6 text-slate-600">{selectedCut.factNote}</p>
                   </div>
 
                   <div className="rounded-2xl border border-orange-100 p-4">
-                    <div className="mb-3 flex items-center justify-between gap-3">
-                      <div className="text-sm font-semibold text-slate-800">부위별 종류</div>
-                      <Badge variant="outline" className="rounded-full border-orange-200">
-                        {selectedCut.subtypes.length}가지
-                      </Badge>
-                    </div>
-                    <div className="space-y-3">
-                      {selectedCut.subtypes.map((item) => (
-                        <div key={item.name} className="rounded-2xl bg-slate-50 px-4 py-3">
-                          <div className="font-medium text-slate-900">{item.name}</div>
-                          <div className="mt-1 text-sm text-slate-600">{item.note}</div>
-                        </div>
-                      ))}
-                    </div>
+                    <div className="mb-2 text-sm font-semibold text-slate-800">추천 용도</div>
+                    <p className="text-sm leading-6 text-slate-600">{selectedCut.usageNote}</p>
                   </div>
 
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="rounded-2xl border border-orange-100 p-4">
-                      <div className="mb-2 text-sm font-semibold text-slate-800">이런 사람에게 추천</div>
-                      <ul className="space-y-2 text-sm text-slate-600">
-                        {selectedCut.recommendFor.map((item) => (
-                          <li key={item}>• {item}</li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div className="rounded-2xl border border-orange-100 p-4">
-                      <div className="mb-2 text-sm font-semibold text-slate-800">이런 경우 비추천</div>
-                      <ul className="space-y-2 text-sm text-slate-600">
-                        {selectedCut.avoidFor.map((item) => (
-                          <li key={item}>• {item}</li>
-                        ))}
-                      </ul>
+                  <div className="rounded-2xl border border-orange-100 p-4">
+                    <div className="mb-2 text-sm font-semibold text-slate-800">고를 때 참고</div>
+                    <p className="text-sm leading-6 text-slate-600">{selectedCut.cautionNote}</p>
+                  </div>
+
+                  <div>
+                    <div className="mb-2 text-sm font-semibold text-slate-800">대체로 함께 비교하는 부위</div>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedCut.alternatives.map((item) => (
+                        <Badge key={item} variant="outline" className="rounded-full border-orange-200">
+                          {item}
+                        </Badge>
+                      ))}
                     </div>
                   </div>
                 </CardContent>
@@ -1196,6 +1022,7 @@ function HomeView({
   setQuery,
   selectedCut,
   filteredCuts,
+  currentCuts,
   prefs,
   setPrefs,
   handleSearch,
@@ -1209,20 +1036,22 @@ function HomeView({
   setQuery: React.Dispatch<React.SetStateAction<string>>;
   selectedCut: MeatCut;
   filteredCuts: MeatCut[];
+  currentCuts: MeatCut[];
   prefs: Prefs;
   setPrefs: React.Dispatch<React.SetStateAction<Prefs>>;
   handleSearch: (value: string) => void;
-  applyQuickKeyword: (type: "grill" | "stew" | "budget") => void;
+  applyQuickKeyword: (type: "grill" | "stew" | "light") => void;
   openDetailPage: (cut: MeatCut) => void;
   setSelectedCut: (cut: MeatCut) => void;
 }) {
   const currentComparisonPairs = comparisonPairsByMeat[meatType];
+  const meta = meatMeta[meatType];
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(251,146,60,0.10),_transparent_30%),linear-gradient(to_bottom,_#f8fafc,_#ffffff,_#f1f5f9)] text-slate-900">
       <section className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6 lg:px-8">
         <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
-          <Sidebar meatType={meatType} setMeatType={setMeatType} />
+          <Sidebar meatType={meatType} onChange={setMeatType} />
 
           <div className="space-y-6">
             <section>
@@ -1234,47 +1063,28 @@ function HomeView({
                   <div className="relative z-10">
                     <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-4 py-2 text-sm font-medium text-orange-700">
                       <Sparkles className="h-4 w-4" />
-                      {meatType === "pork" ? "돼지고기 부위를 쉽게 고르는 가이드" : "소고기 부위를 쉽게 고르는 가이드"}
+                      {meta.hero}
                     </div>
 
                     <h1 className="text-4xl font-black tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
-                      어떤 {meatType === "pork" ? "돼지고기" : "소고기"}를 살지
-                      <span className="block bg-gradient-to-r from-slate-900 to-orange-500 bg-clip-text text-transparent">한눈에 고르는 사이트</span>
+                      어떤 {meta.label}를 고를지
+                      <span className="block bg-gradient-to-r from-slate-900 to-orange-500 bg-clip-text text-transparent">한눈에 보는 가이드</span>
                     </h1>
 
                     <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
-                      부위 이름만 보여주는 사전이 아니라, 구이·찜·가성비·식감까지 고려해서 초보자도 쉽게 선택할 수 있게 도와주는 인터랙티브 가이드입니다.
+                      정확한 수치처럼 보이는 표현은 줄이고, 부위의 위치·대표 용도·느낌을 보수적으로 정리한 안내형 버전입니다.
                     </p>
 
                     <div className="mt-6 flex flex-wrap gap-3">
-                      <Badge className="rounded-full border-0 bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-900">
-                        {meatType === "pork" ? <PiggyBank className="mr-2 h-4 w-4" /> : <Beef className="mr-2 h-4 w-4" />}
-                        {meatType === "pork" ? "돼지고기 MVP" : "소고기 확장"}
-                      </Badge>
-
-                      <button
-                        type="button"
-                        onClick={() => applyQuickKeyword("grill")}
-                        className="rounded-full border border-orange-200 px-4 py-2 text-sm font-medium text-orange-600 transition hover:border-orange-300 hover:bg-orange-50"
-                      >
-                        🔥 구이 추천
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => applyQuickKeyword("stew")}
-                        className="rounded-full border border-orange-200 px-4 py-2 text-sm font-medium text-orange-600 transition hover:border-orange-300 hover:bg-orange-50"
-                      >
-                        🍲 찜·국물용
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => applyQuickKeyword("budget")}
-                        className="rounded-full border border-orange-200 px-4 py-2 text-sm font-medium text-orange-600 transition hover:border-orange-300 hover:bg-orange-50"
-                      >
-                        💰 가성비 선택
-                      </button>
+                      <Button type="button" variant="outline" className="rounded-full border-orange-200 text-orange-600" onClick={() => applyQuickKeyword("grill")}>
+                        🔥 구이 위주
+                      </Button>
+                      <Button type="button" variant="outline" className="rounded-full border-orange-200 text-orange-600" onClick={() => applyQuickKeyword("stew")}>
+                        🍲 국물·찜 위주
+                      </Button>
+                      <Button type="button" variant="outline" className="rounded-full border-orange-200 text-orange-600" onClick={() => applyQuickKeyword("light")}>
+                        🥗 담백한 쪽
+                      </Button>
                     </div>
 
                     <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -1283,11 +1093,7 @@ function HomeView({
                         <Input
                           value={query}
                           onChange={(e) => setQuery(e.target.value)}
-                          placeholder={
-                            meatType === "pork"
-                              ? "삼겹살, 목살, 구이용, 가성비처럼 검색해보세요"
-                              : "등심, 채끝, 안심, 국물용처럼 검색해보세요"
-                          }
+                          placeholder={meta.placeholder}
                           className="h-12 rounded-2xl border-orange-100 bg-white pl-11 shadow-sm focus-visible:ring-orange-300"
                         />
                       </div>
@@ -1304,31 +1110,32 @@ function HomeView({
                         <div className="text-3xl font-bold">{selectedCut.name}</div>
                       </div>
                       <p className="mb-5 text-sm leading-6 text-slate-300">{selectedCut.short}</p>
-                      <div className="grid gap-3 sm:grid-cols-3">
+
+                      <div className="grid gap-3">
                         <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
-                          <div className="mb-1 flex items-center gap-2 text-sm text-slate-300">
+                          <div className="mb-2 flex items-center gap-2 text-sm text-slate-300">
                             <Heart className="h-4 w-4 text-orange-300" />
-                            지방감
+                            지방 느낌
                           </div>
-                          <div className="text-xl font-bold">{selectedCut.fat}%</div>
+                          <div className="font-semibold">{getFatLabel(selectedCut.profile.fat)}</div>
                         </div>
                         <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
-                          <div className="mb-1 flex items-center gap-2 text-sm text-slate-300">
+                          <div className="mb-2 flex items-center gap-2 text-sm text-slate-300">
                             <Beef className="h-4 w-4 text-orange-300" />
-                            풍미
+                            풍미 느낌
                           </div>
-                          <div className="text-xl font-bold">{selectedCut.flavor}%</div>
+                          <div className="font-semibold">{getFlavorLabel(selectedCut.profile.flavor)}</div>
                         </div>
                         <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
-                          <div className="mb-1 flex items-center gap-2 text-sm text-slate-300">
+                          <div className="mb-2 flex items-center gap-2 text-sm text-slate-300">
                             <Scale className="h-4 w-4 text-orange-300" />
-                            부드러움
+                            식감 느낌
                           </div>
-                          <div className="text-xl font-bold">{selectedCut.tenderness}%</div>
+                          <div className="font-semibold">{getTenderLabel(selectedCut.profile.tender)}</div>
                         </div>
                       </div>
+
                       <div className="mt-5 flex flex-wrap gap-2">
-                        <GrillBadge cut={selectedCut} dark />
                         {selectedCut.cooking.map((item) => (
                           <Badge key={item} className="rounded-full border-0 bg-orange-500/20 text-orange-100 hover:bg-orange-500/20">
                             {item}
@@ -1349,13 +1156,13 @@ function HomeView({
                   </CardHeader>
                   <CardContent>
                     <MeatMap meatType={meatType} selected={selectedCut} onSelect={setSelectedCut} />
-                    <p className="mt-4 text-sm text-slate-600">지도의 부위를 누르면 상세 정보가 바뀝니다.</p>
+                    <p className="mt-4 text-sm text-slate-600">지도의 부위를 누르면 정보가 바뀝니다.</p>
                   </CardContent>
                 </Card>
 
                 <Card className="rounded-[2rem] border-orange-100 bg-white/90 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
                   <CardHeader>
-                    <CardTitle className="text-2xl text-slate-950">{selectedCut.name} 상세 정보</CardTitle>
+                    <CardTitle className="text-2xl text-slate-950">{selectedCut.name} 요약</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-5">
                     <div className="flex flex-wrap gap-2">
@@ -1366,53 +1173,16 @@ function HomeView({
                       ))}
                     </div>
 
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="rounded-2xl bg-slate-50 p-4">
-                        <div className="text-sm text-slate-500">위치</div>
-                        <div className="mt-1 font-semibold text-slate-900">{selectedCut.location}</div>
-                      </div>
-                      <div className="rounded-2xl bg-slate-50 p-4">
-                        <div className="text-sm text-slate-500">식감</div>
-                        <div className="mt-1 font-semibold text-slate-900">{selectedCut.texture}</div>
-                      </div>
-                      <div className="rounded-2xl bg-slate-50 p-4">
-                        <div className="text-sm text-slate-500">가격 느낌</div>
-                        <div className="mt-1 font-semibold text-slate-900">{selectedCut.price}</div>
-                      </div>
-                      <div className="rounded-2xl bg-slate-50 p-4">
-                        <div className="text-sm text-slate-500">초보 추천도</div>
-                        <div className="mt-1 font-semibold text-slate-900">{selectedCut.beginner}</div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <StatBar label="지방감" value={selectedCut.fat} />
-                      <StatBar label="풍미" value={selectedCut.flavor} />
-                      <StatBar label="부드러움" value={selectedCut.tenderness} />
-                    </div>
+                    <ProfileCard cut={selectedCut} />
 
                     <div className="grid gap-4 sm:grid-cols-2">
-                      <div>
-                        <div className="mb-2 text-sm font-semibold text-slate-800">추천 요리</div>
-                        <div className="flex flex-wrap gap-2">
-                          {selectedCut.cooking.map((item) => (
-                            <Badge key={item} className="rounded-full bg-orange-500 text-white hover:bg-orange-500">
-                              {item}
-                            </Badge>
-                          ))}
-                          <GrillBadge cut={selectedCut} />
-                        </div>
-                      </div>
-                      <div>
-                        <div className="mb-2 text-sm font-semibold text-slate-800">대체 부위</div>
-                        <div className="flex flex-wrap gap-2">
-                          {selectedCut.alternatives.map((item) => (
-                            <Badge key={item} variant="outline" className="rounded-full border-orange-200">
-                              {item}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
+                      <InfoPill title="위치" value={selectedCut.location} />
+                      <InfoPill title="대표 용도" value={selectedCut.cooking.join(", ")} />
+                    </div>
+
+                    <div className="rounded-2xl border border-orange-100 p-4">
+                      <div className="mb-2 text-sm font-semibold text-slate-800">대표 특징</div>
+                      <p className="text-sm leading-6 text-slate-600">{selectedCut.factNote}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1420,7 +1190,7 @@ function HomeView({
             </section>
 
             <section id="recommendation-section">
-              <RecommendationPanel cuts={filteredCuts.length > 0 ? filteredCuts : [selectedCut]} prefs={prefs} setPrefs={setPrefs} />
+              <RecommendationPanel cuts={currentCuts} prefs={prefs} setPrefs={setPrefs} />
             </section>
 
             <section>
@@ -1428,7 +1198,7 @@ function HomeView({
                 <ArrowLeftRight className="h-5 w-5 text-orange-500" />
                 <h2 className="text-2xl font-bold text-slate-950">비슷한 부위 비교</h2>
               </div>
-              <div className="grid gap-6 lg:grid-cols-3">
+              <div className="grid gap-6 lg:grid-cols-2">
                 {currentComparisonPairs.map((pair) => (
                   <Card key={pair.title} className="rounded-3xl border-orange-100 bg-white/90 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
                     <CardHeader>
@@ -1472,12 +1242,9 @@ export default function MeatSelectorSite() {
   const [query, setQuery] = useState("");
   const [prefs, setPrefs] = useState<Prefs>(defaultPrefs);
   const [currentPage, setCurrentPage] = useState<PageMode>("home");
-
-  const currentCuts = useMemo(() => {
-    return meatType === "pork" ? porkCuts : beefCuts;
-  }, [meatType]);
-
   const [selectedCut, setSelectedCut] = useState<MeatCut>(porkCuts[0]);
+
+  const currentCuts = useMemo(() => getAllCutsByType(meatType), [meatType]);
 
   const filteredCuts = useMemo(() => {
     const q = query.trim();
@@ -1487,6 +1254,7 @@ export default function MeatSelectorSite() {
       (cut) =>
         cut.name.includes(q) ||
         cut.short.includes(q) ||
+        cut.location.includes(q) ||
         cut.tags.some((tag) => tag.includes(q)) ||
         cut.cooking.some((item) => item.includes(q))
     );
@@ -1499,7 +1267,8 @@ export default function MeatSelectorSite() {
     const matchedCut = currentCuts.find(
       (cut) =>
         cut.name.includes(normalized) ||
-        normalized.includes(cut.name) ||
+        cut.short.includes(normalized) ||
+        cut.location.includes(normalized) ||
         cut.tags.some((tag) => tag.includes(normalized) || normalized.includes(tag)) ||
         cut.cooking.some((item) => item.includes(normalized) || normalized.includes(item))
     );
@@ -1515,21 +1284,25 @@ export default function MeatSelectorSite() {
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const applyQuickKeyword = (type: "grill" | "stew" | "budget") => {
+  const applyQuickKeyword = (type: "grill" | "stew" | "light") => {
     const nextPrefs: Prefs = { ...defaultPrefs };
 
     if (type === "grill") {
       nextPrefs.cooking = "구이";
       nextPrefs.texture = "상관없음";
+      nextPrefs.fat = "중간";
     }
+
     if (type === "stew") {
-      nextPrefs.cooking = "찜";
-      nextPrefs.texture = "부드러운";
+      nextPrefs.cooking = meatType === "chicken" ? "볶음" : "국물요리";
+      nextPrefs.texture = "부드러운 편";
+      nextPrefs.fat = "중간";
     }
-    if (type === "budget") {
-      nextPrefs.cooking = "볶음";
-      nextPrefs.texture = "상관없음";
-      nextPrefs.budget = "가성비 위주";
+
+    if (type === "light") {
+      nextPrefs.texture = "담백한 편";
+      nextPrefs.fat = "담백한 쪽";
+      nextPrefs.budget = "보통";
     }
 
     setPrefs(nextPrefs);
@@ -1548,11 +1321,12 @@ export default function MeatSelectorSite() {
   };
 
   const handleChangeMeatType = (type: MeatType) => {
+    const nextCuts = getAllCutsByType(type);
     setMeatType(type);
     setQuery("");
     setPrefs(defaultPrefs);
     setCurrentPage("home");
-    setSelectedCut(type === "pork" ? porkCuts[0] : beefCuts[0]);
+    setSelectedCut(nextCuts[0]);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -1563,6 +1337,7 @@ export default function MeatSelectorSite() {
         selectedCut={selectedCut}
         setSelectedCut={setSelectedCut}
         goHome={goHome}
+        changeMeatType={handleChangeMeatType}
       />
     );
   }
@@ -1575,6 +1350,7 @@ export default function MeatSelectorSite() {
       setQuery={setQuery}
       selectedCut={selectedCut}
       filteredCuts={filteredCuts}
+      currentCuts={currentCuts}
       prefs={prefs}
       setPrefs={setPrefs}
       handleSearch={handleSearch}
