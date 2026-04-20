@@ -59,8 +59,8 @@ const meatMeta: Record<
   pork: {
     label: "돼지고기",
     hero: "돼지고기 부위를 쉽게 고르는 가이드",
-    placeholder: "삼겹살, 목심, 안심, 앞다리처럼 검색해보세요",
-    sideDesc: "삼겹살, 목심, 등심, 안심 등",
+    placeholder: "삼겹살, 목살, 안심, 앞다리처럼 검색해보세요",
+    sideDesc: "삼겹살, 목살, 등심, 안심 등",
   },
   beef: {
     label: "소고기",
@@ -82,12 +82,12 @@ const comparisonPairsByMeat: Record<
 > = {
   pork: [
     {
-      title: "삼겹살 vs 목심",
+      title: "삼겹살 vs 목살",
       rows: [
         ["더 고소하게 느껴지기 쉬운 쪽", "삼겹살"],
-        ["조금 덜 무겁게 느껴지기 쉬운 쪽", "목심"],
+        ["조금 덜 무겁게 느껴지기 쉬운 쪽", "목살"],
         ["구이 입문용", "둘 다 무난"],
-        ["담백한 쪽", "목심"],
+        ["담백한 쪽", "목살"],
       ],
     },
     {
@@ -341,7 +341,7 @@ function PorkMap({
   onSelect: (cut: CutItem) => void;
 }) {
   const items = [
-    { id: "moksim", label: "목심", left: "32%", top: "18%" },
+    { id: "moksal", label: "목살", left: "32%", top: "18%" },
     { id: "deungsim-pork", label: "등심", left: "58%", top: "18%" },
     { id: "ansim-pork", label: "안심", left: "73%", top: "28%" },
     { id: "apdari", label: "앞다리", left: "25%", top: "58%" },
