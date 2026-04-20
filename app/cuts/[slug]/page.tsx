@@ -10,10 +10,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { porkCuts } from "@/data/porkCuts";
+import { allCuts } from "@/data/porkCuts";
 
 export function generateStaticParams() {
-  return porkCuts.map((cut) => ({
+  return allCuts.map((cut) => ({
     slug: cut.slug,
   }));
 }
@@ -23,13 +23,15 @@ export default function CutDetailPage({
 }: {
   params: { slug: string };
 }) {
-  const cut = porkCuts.find((item) => item.slug === params.slug);
+  const cut = allCuts.find((item) => item.slug === params.slug);
 
   if (!cut) {
     notFound();
   }
 
-  const relatedCuts = porkCuts.filter((item) => item.slug !== cut.slug);
+  const relatedCuts = allCuts.filter(
+    (item) => item.slug !== cut.slug && item.meatType === cut.meatType
+  );
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(251,146,60,0.10),_transparent_30%),linear-gradient(to_bottom,_#f8fafc,_#ffffff,_#f1f5f9)] text-slate-900">
@@ -154,17 +156,6 @@ export default function CutDetailPage({
                   </div>
                 </div>
               </div>
-
-              <div className="rounded-2xl border border-orange-100 p-4">
-                <div className="mb-2 text-sm font-semibold text-slate-800">
-                  한눈에 보기
-                </div>
-                <p className="text-sm leading-6 text-slate-600">
-                  {cut.name}은(는) {cut.shortDescription.toLowerCase()}{" "}
-                  부위로 볼 수 있으며, 실제 선택 시에는 두께, 손질 상태,
-                  지방 분포에 따라 체감이 달라질 수 있습니다.
-                </p>
-              </div>
             </CardContent>
           </Card>
         </div>
@@ -249,7 +240,7 @@ export default function CutDetailPage({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {relatedCuts.map((item) => (
+              {relatedCuts.slice(0, 4).map((item) => (
                 <Link key={item.slug} href={`/cuts/${item.slug}`} className="block">
                   <div className="rounded-2xl border border-orange-100 p-4 transition hover:bg-orange-50">
                     <div className="flex items-start justify-between gap-3">
