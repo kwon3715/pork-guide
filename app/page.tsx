@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import Link from "next/link";
 import {
   Search,
   Beef,
@@ -18,7 +19,6 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 
 type MeatType = "pork" | "beef" | "chicken";
-type PageMode = "home" | "detail";
 
 type Prefs = {
   cooking: "구이" | "볶음" | "찜" | "국물요리" | "튀김" | "수육";
@@ -120,7 +120,8 @@ const porkCuts: MeatCut[] = [
     location: "목 부위",
     factNote: "근육 사이에 지방이 고르게 분포하는 편으로 소개된다.",
     usageNote: "구이, 전골, 오래 익히는 요리에 두루 쓰이는 편이다.",
-    cautionNote: "완전히 담백한 부위를 원하는 사람에게는 조금 진하게 느껴질 수 있다.",
+    cautionNote:
+      "완전히 담백한 부위를 원하는 사람에게는 조금 진하게 느껴질 수 있다.",
     cooking: ["구이", "국물요리"],
     tags: ["균형형", "구이용", "대중적"],
     alternatives: ["삼겹살", "앞다리"],
@@ -201,6 +202,21 @@ const porkCuts: MeatCut[] = [
     alternatives: ["앞다리", "갈비"],
     profile: { fat: 18, flavor: 60, tender: 44 },
   },
+  {
+    id: "hangjeongsal",
+    meatType: "pork",
+    name: "항정살",
+    animal: "돼지",
+    short: "쫄깃한 식감과 진한 풍미로 인기가 높은 특수부위",
+    location: "목 주변",
+    factNote: "목 주변에서 나오는 부위로 특유의 식감 때문에 많이 찾는다.",
+    usageNote: "구이 중심으로 즐기는 경우가 많다.",
+    cautionNote: "손질 상태에 따라 식감 차이가 느껴질 수 있다.",
+    cooking: ["구이"],
+    tags: ["특수부위", "쫄깃함", "풍미 있음"],
+    alternatives: ["목심", "삼겹살"],
+    profile: { fat: 68, flavor: 82, tender: 70 },
+  },
 ];
 
 const beefCuts: MeatCut[] = [
@@ -211,7 +227,8 @@ const beefCuts: MeatCut[] = [
     animal: "소",
     short: "구이와 스테이크에 많이 쓰이는 대표 부위",
     location: "등 가운데 쪽",
-    factNote: "등 가운데에 위치하며 구이·스테이크용 대표 부위로 널리 알려져 있다.",
+    factNote:
+      "등 가운데에 위치하며 구이·스테이크용 대표 부위로 널리 알려져 있다.",
     usageNote: "구이, 스테이크에 가장 무난하게 접근하기 좋은 편이다.",
     cautionNote: "가격 부담이 있는 편이라 용도 대비 예산을 함께 보는 게 좋다.",
     cooking: ["구이"],
@@ -226,9 +243,11 @@ const beefCuts: MeatCut[] = [
     animal: "소",
     short: "부드러움과 풍미의 균형이 좋아 스테이크용으로 많이 찾는 부위",
     location: "허리 끝 쪽",
-    factNote: "허리 끝 부분으로 설명되며 구이·스테이크용으로 자주 쓰인다.",
+    factNote:
+      "허리 끝 부분으로 설명되며 구이·스테이크용으로 자주 쓰인다.",
     usageNote: "스테이크, 구이에 잘 맞고 비교적 균형감 있는 선택지다.",
-    cautionNote: "완전히 담백한 부위를 기대하면 등심보다 낫지만 여전히 진한 편일 수 있다.",
+    cautionNote:
+      "완전히 담백한 부위를 기대하면 등심보다 낫지만 여전히 진한 편일 수 있다.",
     cooking: ["구이"],
     tags: ["균형형", "스테이크", "풍미"],
     alternatives: ["등심", "안심"],
@@ -271,7 +290,8 @@ const beefCuts: MeatCut[] = [
     animal: "소",
     short: "오래 끓일수록 국물 맛을 살리기 좋은 부위",
     location: "앞가슴~복부 아래쪽",
-    factNote: "결합조직이 많아 오래 끓이는 조리에 잘 맞는다고 소개된다.",
+    factNote:
+      "결합조직이 많아 오래 끓이는 조리에 잘 맞는다고 소개된다.",
     usageNote: "국거리, 장시간 조리, 수육류에 잘 어울린다.",
     cautionNote: "빠르게 굽는 용도만 생각하면 다른 부위가 더 낫다.",
     cooking: ["국물요리", "수육"],
@@ -286,7 +306,8 @@ const beefCuts: MeatCut[] = [
     animal: "소",
     short: "근육 결이 살아 있어 오래 익히는 요리에 잘 맞는 부위",
     location: "다리 쪽",
-    factNote: "힘줄과 결이 있는 편이라 오래 익힐수록 쓰기 좋은 쪽이다.",
+    factNote:
+      "힘줄과 결이 있는 편이라 오래 익힐수록 쓰기 좋은 쪽이다.",
     usageNote: "찜, 국물요리, 수육류에 잘 맞는다.",
     cautionNote: "구이로 바로 먹으면 질기게 느껴질 수 있다.",
     cooking: ["찜", "국물요리", "수육"],
@@ -334,7 +355,8 @@ const chickenCuts: MeatCut[] = [
     animal: "닭",
     short: "지방이 적고 담백한 쪽으로 많이 찾는 부위",
     location: "가슴 부위",
-    factNote: "흉골 좌우에 붙어 있는 근육으로 설명되며 지방이 적은 편이다.",
+    factNote:
+      "흉골 좌우에 붙어 있는 근육으로 설명되며 지방이 적은 편이다.",
     usageNote: "튀김, 샐러드, 스테이크처럼 손질하기 쉬운 조리에 잘 맞는다.",
     cautionNote: "과하게 익히면 퍽퍽하게 느껴질 수 있다.",
     cooking: ["튀김", "볶음", "구이"],
@@ -364,7 +386,8 @@ const chickenCuts: MeatCut[] = [
     animal: "닭",
     short: "지방과 단백질 균형이 좋아 선호도가 높은 편의 부위",
     location: "다리 부위",
-    factNote: "다리 쪽은 가슴보다 진한 맛과 식감을 느끼기 쉬운 편이다.",
+    factNote:
+      "다리 쪽은 가슴보다 진한 맛과 식감을 느끼기 쉬운 편이다.",
     usageNote: "튀김, 구이, 양념요리에 잘 어울린다.",
     cautionNote: "담백함만 찾는 경우에는 가슴살 쪽이 더 잘 맞을 수 있다.",
     cooking: ["튀김", "구이"],
@@ -394,9 +417,11 @@ const chickenCuts: MeatCut[] = [
     animal: "닭",
     short: "살은 적지만 구이와 튀김에서 인기가 높은 부위",
     location: "날개 부위",
-    factNote: "날개는 구이·튀김용으로 많이 소비되는 부위로 알려져 있다.",
+    factNote:
+      "날개는 구이·튀김용으로 많이 소비되는 부위로 알려져 있다.",
     usageNote: "튀김, 구이, 조림처럼 양념을 살리는 조리에 잘 맞는다.",
-    cautionNote: "먹을 수 있는 살 양은 다른 부위보다 적게 느껴질 수 있다.",
+    cautionNote:
+      "먹을 수 있는 살 양은 다른 부위보다 적게 느껴질 수 있다.",
     cooking: ["튀김", "구이"],
     tags: ["양념요리", "간식용", "풍미"],
     alternatives: ["닭다리", "넓적다리"],
@@ -404,7 +429,10 @@ const chickenCuts: MeatCut[] = [
   },
 ];
 
-const comparisonPairsByMeat: Record<MeatType, { title: string; rows: [string, string][] }[]> = {
+const comparisonPairsByMeat: Record<
+  MeatType,
+  { title: string; rows: [string, string][] }[]
+> = {
   pork: [
     {
       title: "삼겹살 vs 목심",
@@ -473,6 +501,16 @@ function getAllCutsByType(type: MeatType) {
   return chickenCuts;
 }
 
+function getDetailHref(cut: MeatCut) {
+  if (cut.meatType !== "pork") return null;
+
+  if (cut.id === "samgyeopsal") return "/cuts/samgyeopsal";
+  if (cut.id === "moksim") return "/cuts/moksal";
+  if (cut.id === "hangjeongsal") return "/cuts/hangjeongsal";
+
+  return null;
+}
+
 function getFatLabel(value: number) {
   if (value <= 15) return "매우 담백한 편";
   if (value <= 35) return "담백한 편";
@@ -500,7 +538,8 @@ function scoreCut(cut: MeatCut, prefs: Prefs) {
 
   if (cut.cooking.includes(prefs.cooking)) score += 35;
   if (prefs.texture === "부드러운 편") score += cut.profile.tender * 0.35;
-  if (prefs.texture === "쫄깃한 편") score += cut.tags.some((t) => t.includes("쫄깃")) ? 26 : 8;
+  if (prefs.texture === "쫄깃한 편")
+    score += cut.tags.some((t) => t.includes("쫄깃")) ? 26 : 8;
   if (prefs.texture === "담백한 편") score += (100 - cut.profile.fat) * 0.25;
   if (prefs.texture === "상관없음") score += 10;
 
@@ -521,12 +560,24 @@ function scoreCut(cut: MeatCut, prefs: Prefs) {
 function getRecommendationReasons(cut: MeatCut, prefs: Prefs) {
   const reasons: string[] = [];
 
-  if (cut.cooking.includes(prefs.cooking)) reasons.push(`"${prefs.cooking}" 용도와 잘 맞는 편`);
-  if (prefs.texture === "부드러운 편" && cut.profile.tender >= 70) reasons.push("부드러운 식감 쪽에 가까움");
-  if (prefs.texture === "쫄깃한 편" && cut.tags.some((t) => t.includes("쫄깃"))) reasons.push("쫄깃한 식감 쪽으로 보기 쉬움");
-  if (prefs.texture === "담백한 편" && cut.profile.fat <= 35) reasons.push("상대적으로 담백한 쪽");
-  if (prefs.fat === "고소한 쪽" && cut.profile.fat >= 55) reasons.push("고소하게 느껴지기 쉬운 편");
-  if (prefs.budget === "가성비 우선" && (cut.tags.includes("실속형") || cut.tags.includes("가성비"))) reasons.push("실속형 선택지로 보기 좋음");
+  if (cut.cooking.includes(prefs.cooking))
+    reasons.push(`"${prefs.cooking}" 용도와 잘 맞는 편`);
+  if (prefs.texture === "부드러운 편" && cut.profile.tender >= 70)
+    reasons.push("부드러운 식감 쪽에 가까움");
+  if (
+    prefs.texture === "쫄깃한 편" &&
+    cut.tags.some((t) => t.includes("쫄깃"))
+  )
+    reasons.push("쫄깃한 식감 쪽으로 보기 쉬움");
+  if (prefs.texture === "담백한 편" && cut.profile.fat <= 35)
+    reasons.push("상대적으로 담백한 쪽");
+  if (prefs.fat === "고소한 쪽" && cut.profile.fat >= 55)
+    reasons.push("고소하게 느껴지기 쉬운 편");
+  if (
+    prefs.budget === "가성비 우선" &&
+    (cut.tags.includes("실속형") || cut.tags.includes("가성비"))
+  )
+    reasons.push("실속형 선택지로 보기 좋음");
 
   return reasons.slice(0, 3);
 }
@@ -581,13 +632,27 @@ function Sidebar({
                 type="button"
                 onClick={() => onChange(type)}
                 className={`flex w-full items-center gap-3 rounded-2xl border px-4 py-4 text-left transition ${
-                  active ? "border-orange-200 bg-orange-50" : "border-slate-200 bg-white hover:border-orange-200 hover:bg-orange-50/50"
+                  active
+                    ? "border-orange-200 bg-orange-50"
+                    : "border-slate-200 bg-white hover:border-orange-200 hover:bg-orange-50/50"
                 }`}
               >
-                <div className={`rounded-2xl p-3 ${active ? "bg-orange-500 text-white" : "bg-slate-100 text-slate-700"}`}>{icon}</div>
+                <div
+                  className={`rounded-2xl p-3 ${
+                    active
+                      ? "bg-orange-500 text-white"
+                      : "bg-slate-100 text-slate-700"
+                  }`}
+                >
+                  {icon}
+                </div>
                 <div>
-                  <div className="font-semibold text-slate-900">{meatMeta[type].label}</div>
-                  <div className="text-sm text-slate-500">{meatMeta[type].sideDesc}</div>
+                  <div className="font-semibold text-slate-900">
+                    {meatMeta[type].label}
+                  </div>
+                  <div className="text-sm text-slate-500">
+                    {meatMeta[type].sideDesc}
+                  </div>
                 </div>
               </button>
             );
@@ -604,7 +669,13 @@ function Sidebar({
   );
 }
 
-function PorkMap({ selected, onSelect }: { selected: MeatCut; onSelect: (cut: MeatCut) => void }) {
+function PorkMap({
+  selected,
+  onSelect,
+}: {
+  selected: MeatCut;
+  onSelect: (cut: MeatCut) => void;
+}) {
   const items = [
     { id: "moksim", label: "목심", left: "32%", top: "18%" },
     { id: "deungsim_pork", label: "등심", left: "58%", top: "18%" },
@@ -613,6 +684,7 @@ function PorkMap({ selected, onSelect }: { selected: MeatCut; onSelect: (cut: Me
     { id: "samgyeopsal", label: "삼겹살", left: "61%", top: "70%" },
     { id: "galbi_pork", label: "갈비", left: "48%", top: "35%" },
     { id: "satae_pork", label: "사태", left: "78%", top: "64%" },
+    { id: "hangjeongsal", label: "항정살", left: "44%", top: "10%" },
   ];
 
   return (
@@ -641,7 +713,9 @@ function PorkMap({ selected, onSelect }: { selected: MeatCut; onSelect: (cut: Me
                 if (cut) onSelect(cut);
               }}
               className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full px-3 py-1 text-xs font-bold shadow-sm transition sm:text-sm ${
-                active ? "bg-orange-500 text-white ring-4 ring-orange-200" : "border border-slate-300 bg-white text-slate-900 hover:border-orange-400 hover:text-orange-600"
+                active
+                  ? "bg-orange-500 text-white ring-4 ring-orange-200"
+                  : "border border-slate-300 bg-white text-slate-900 hover:border-orange-400 hover:text-orange-600"
               }`}
               style={{ left: item.left, top: item.top }}
             >
@@ -654,7 +728,13 @@ function PorkMap({ selected, onSelect }: { selected: MeatCut; onSelect: (cut: Me
   );
 }
 
-function BeefMap({ selected, onSelect }: { selected: MeatCut; onSelect: (cut: MeatCut) => void }) {
+function BeefMap({
+  selected,
+  onSelect,
+}: {
+  selected: MeatCut;
+  onSelect: (cut: MeatCut) => void;
+}) {
   const items = [
     { id: "deungsim_beef", label: "등심", left: "58%", top: "22%" },
     { id: "chaekkeut", label: "채끝", left: "76%", top: "28%" },
@@ -692,7 +772,9 @@ function BeefMap({ selected, onSelect }: { selected: MeatCut; onSelect: (cut: Me
                 if (cut) onSelect(cut);
               }}
               className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full px-3 py-1 text-xs font-bold shadow-sm transition sm:text-sm ${
-                active ? "bg-orange-500 text-white ring-4 ring-orange-200" : "border border-slate-300 bg-white text-slate-900 hover:border-orange-400 hover:text-orange-600"
+                active
+                  ? "bg-orange-500 text-white ring-4 ring-orange-200"
+                  : "border border-slate-300 bg-white text-slate-900 hover:border-orange-400 hover:text-orange-600"
               }`}
               style={{ left: item.left, top: item.top }}
             >
@@ -705,7 +787,13 @@ function BeefMap({ selected, onSelect }: { selected: MeatCut; onSelect: (cut: Me
   );
 }
 
-function ChickenMap({ selected, onSelect }: { selected: MeatCut; onSelect: (cut: MeatCut) => void }) {
+function ChickenMap({
+  selected,
+  onSelect,
+}: {
+  selected: MeatCut;
+  onSelect: (cut: MeatCut) => void;
+}) {
   const items = [
     { id: "gaseumsal", label: "가슴살", left: "50%", top: "38%" },
     { id: "ansim_chicken", label: "안심", left: "58%", top: "48%" },
@@ -724,8 +812,22 @@ function ChickenMap({ selected, onSelect }: { selected: MeatCut; onSelect: (cut:
           <circle cx="248" cy="118" r="8" fill="#94a3b8" />
           <path d="M185 130 L150 120 L185 145 Z" fill="#fbbf24" />
           <ellipse cx="195" cy="190" rx="55" ry="22" fill="#d1d5db" />
-          <ellipse cx="255" cy="255" rx="22" ry="58" fill="#d1d5db" transform="rotate(15 255 255)" />
-          <ellipse cx="360" cy="270" rx="22" ry="64" fill="#d1d5db" transform="rotate(-10 360 270)" />
+          <ellipse
+            cx="255"
+            cy="255"
+            rx="22"
+            ry="58"
+            fill="#d1d5db"
+            transform="rotate(15 255 255)"
+          />
+          <ellipse
+            cx="360"
+            cy="270"
+            rx="22"
+            ry="64"
+            fill="#d1d5db"
+            transform="rotate(-10 360 270)"
+          />
         </svg>
 
         {items.map((item) => {
@@ -739,7 +841,9 @@ function ChickenMap({ selected, onSelect }: { selected: MeatCut; onSelect: (cut:
                 if (cut) onSelect(cut);
               }}
               className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full px-3 py-1 text-xs font-bold shadow-sm transition sm:text-sm ${
-                active ? "bg-orange-500 text-white ring-4 ring-orange-200" : "border border-slate-300 bg-white text-slate-900 hover:border-orange-400 hover:text-orange-600"
+                active
+                  ? "bg-orange-500 text-white ring-4 ring-orange-200"
+                  : "border border-slate-300 bg-white text-slate-900 hover:border-orange-400 hover:text-orange-600"
               }`}
               style={{ left: item.left, top: item.top }}
             >
@@ -761,18 +865,18 @@ function MeatMap({
   selected: MeatCut;
   onSelect: (cut: MeatCut) => void;
 }) {
-  if (meatType === "pork") return <PorkMap selected={selected} onSelect={onSelect} />;
-  if (meatType === "beef") return <BeefMap selected={selected} onSelect={onSelect} />;
+  if (meatType === "pork") {
+    return <PorkMap selected={selected} onSelect={onSelect} />;
+  }
+  if (meatType === "beef") {
+    return <BeefMap selected={selected} onSelect={onSelect} />;
+  }
   return <ChickenMap selected={selected} onSelect={onSelect} />;
 }
 
-function CutCard({
-  cut,
-  onSelect,
-}: {
-  cut: MeatCut;
-  onSelect: (cut: MeatCut) => void;
-}) {
+function CutCard({ cut }: { cut: MeatCut }) {
+  const detailHref = getDetailHref(cut);
+
   return (
     <Card className="overflow-hidden rounded-3xl border-orange-100 bg-white/90 shadow-[0_10px_30px_rgba(15,23,42,0.06)] transition hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(15,23,42,0.10)]">
       <CardContent className="p-5">
@@ -783,7 +887,11 @@ function CutCard({
 
         <div className="mb-4 flex flex-wrap gap-2">
           {cut.tags.map((tag) => (
-            <Badge key={tag} variant="outline" className="rounded-full border-orange-200">
+            <Badge
+              key={tag}
+              variant="outline"
+              className="rounded-full border-orange-200"
+            >
               #{tag}
             </Badge>
           ))}
@@ -794,10 +902,21 @@ function CutCard({
           <InfoPill title="대표 용도" value={cut.cooking.join(", ")} />
         </div>
 
-        <Button className="w-full rounded-2xl bg-orange-500 text-white hover:bg-orange-600" onClick={() => onSelect(cut)}>
-          자세히 보기
-          <ChevronRight className="ml-1 h-4 w-4" />
-        </Button>
+        {detailHref ? (
+          <Link href={detailHref} className="block">
+            <Button className="w-full rounded-2xl bg-orange-500 text-white hover:bg-orange-600">
+              자세히 보기
+              <ChevronRight className="ml-1 h-4 w-4" />
+            </Button>
+          </Link>
+        ) : (
+          <Button
+            disabled
+            className="w-full rounded-2xl bg-slate-300 text-white hover:bg-slate-300"
+          >
+            상세페이지 준비중
+          </Button>
+        )}
       </CardContent>
     </Card>
   );
@@ -858,8 +977,17 @@ function RecommendationPanel({
                         key={option}
                         type="button"
                         variant={active ? "default" : "outline"}
-                        className={`rounded-full ${active ? "bg-orange-500 hover:bg-orange-600" : "border-orange-200"}`}
-                        onClick={() => setPrefs((prev) => ({ ...prev, [typedKey]: option as Prefs[keyof Prefs] }))}
+                        className={`rounded-full ${
+                          active
+                            ? "bg-orange-500 hover:bg-orange-600"
+                            : "border-orange-200"
+                        }`}
+                        onClick={() =>
+                          setPrefs((prev) => ({
+                            ...prev,
+                            [typedKey]: option as Prefs[keyof Prefs],
+                          }))
+                        }
                       >
                         {option}
                       </Button>
@@ -877,140 +1005,72 @@ function RecommendationPanel({
           <CardTitle className="text-xl">추천 결과</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {results.map((cut, idx) => (
-            <div key={cut.id} className="rounded-2xl border border-orange-100 p-4">
-              <div className="mb-2 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Badge className="rounded-full bg-orange-500 text-white hover:bg-orange-500">TOP {idx + 1}</Badge>
-                  <div className="font-bold text-slate-900">{cut.name}</div>
+          {results.map((cut, idx) => {
+            const detailHref = getDetailHref(cut);
+
+            return (
+              <div
+                key={cut.id}
+                className="rounded-2xl border border-orange-100 p-4"
+              >
+                <div className="mb-2 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Badge className="rounded-full bg-orange-500 text-white hover:bg-orange-500">
+                      TOP {idx + 1}
+                    </Badge>
+                    <div className="font-bold text-slate-900">{cut.name}</div>
+                  </div>
+                  <div className="text-sm font-semibold text-slate-600">
+                    추천 참고용
+                  </div>
                 </div>
-                <div className="text-sm font-semibold text-slate-600">추천 참고용</div>
-              </div>
-              <p className="mb-3 text-sm text-slate-600">{cut.short}</p>
-              <div className="mb-3 flex flex-wrap gap-2">
-                {cut.cooking.map((item) => (
-                  <Badge key={item} variant="outline" className="rounded-full border-orange-200">
-                    {item}
-                  </Badge>
-                ))}
-              </div>
-              {cut.reasons.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {cut.reasons.map((reason) => (
-                    <Badge key={reason} className="rounded-full border-0 bg-slate-100 text-slate-700 hover:bg-slate-100">
-                      {reason}
+
+                <p className="mb-3 text-sm text-slate-600">{cut.short}</p>
+
+                <div className="mb-3 flex flex-wrap gap-2">
+                  {cut.cooking.map((item) => (
+                    <Badge
+                      key={item}
+                      variant="outline"
+                      className="rounded-full border-orange-200"
+                    >
+                      {item}
                     </Badge>
                   ))}
                 </div>
-              )}
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
 
-function DetailView({
-  meatType,
-  selectedCut,
-  setSelectedCut,
-  goHome,
-  changeMeatType,
-}: {
-  meatType: MeatType;
-  selectedCut: MeatCut;
-  setSelectedCut: (cut: MeatCut) => void;
-  goHome: () => void;
-  changeMeatType: (type: MeatType) => void;
-}) {
-  return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(251,146,60,0.10),_transparent_30%),linear-gradient(to_bottom,_#f8fafc,_#ffffff,_#f1f5f9)] text-slate-900">
-      <section className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6 lg:px-8">
-        <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
-          <Sidebar meatType={meatType} onChange={changeMeatType} />
-
-          <div>
-            <div className="mb-6 flex items-center justify-between gap-4">
-              <Button type="button" variant="outline" className="rounded-full border-orange-200" onClick={goHome}>
-                ← 목록으로 돌아가기
-              </Button>
-              <div className="text-sm text-slate-500">{selectedCut.animal} 상세 페이지</div>
-            </div>
-
-            <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-              <Card className="rounded-[2rem] border-orange-100 bg-white/90 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
-                <CardHeader>
-                  <CardTitle className="text-2xl text-slate-950">부위 위치 한눈에 보기</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <MeatMap meatType={meatType} selected={selectedCut} onSelect={setSelectedCut} />
-                  <p className="mt-4 text-sm text-slate-600">지도의 부위를 누르면 상세 정보가 바뀝니다.</p>
-
-                  <div className="mt-6 rounded-2xl border border-orange-100 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
-                    <div className="font-semibold text-slate-900">정보 안내</div>
-                    이 페이지는 부위의 <span className="font-medium">위치, 특징, 대표 용도</span> 중심으로 요약했습니다.
-                    <br />
-                    품종, 손질 상태, 두께, 조리 시간에 따라 체감은 달라질 수 있습니다.
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="rounded-[2rem] border-orange-100 bg-white/90 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
-                <CardHeader>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <CardTitle className="text-3xl text-slate-950">{selectedCut.name}</CardTitle>
-                    <Badge className="rounded-full bg-orange-500 text-white hover:bg-orange-500">상세 정보</Badge>
-                  </div>
-                  <p className="text-sm text-slate-600">{selectedCut.short}</p>
-                </CardHeader>
-                <CardContent className="space-y-5">
-                  <div className="flex flex-wrap gap-2">
-                    {selectedCut.tags.map((tag) => (
-                      <Badge key={tag} variant="outline" className="rounded-full border-orange-200">
-                        #{tag}
+                {cut.reasons.length > 0 && (
+                  <div className="mb-4 flex flex-wrap gap-2">
+                    {cut.reasons.map((reason) => (
+                      <Badge
+                        key={reason}
+                        className="rounded-full border-0 bg-slate-100 text-slate-700 hover:bg-slate-100"
+                      >
+                        {reason}
                       </Badge>
                     ))}
                   </div>
+                )}
 
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <InfoPill title="위치" value={selectedCut.location} />
-                    <InfoPill title="대표 용도" value={selectedCut.cooking.join(", ")} />
-                  </div>
-
-                  <ProfileCard cut={selectedCut} />
-
-                  <div className="rounded-2xl border border-orange-100 p-4">
-                    <div className="mb-2 text-sm font-semibold text-slate-800">대표 특징</div>
-                    <p className="text-sm leading-6 text-slate-600">{selectedCut.factNote}</p>
-                  </div>
-
-                  <div className="rounded-2xl border border-orange-100 p-4">
-                    <div className="mb-2 text-sm font-semibold text-slate-800">추천 용도</div>
-                    <p className="text-sm leading-6 text-slate-600">{selectedCut.usageNote}</p>
-                  </div>
-
-                  <div className="rounded-2xl border border-orange-100 p-4">
-                    <div className="mb-2 text-sm font-semibold text-slate-800">고를 때 참고</div>
-                    <p className="text-sm leading-6 text-slate-600">{selectedCut.cautionNote}</p>
-                  </div>
-
-                  <div>
-                    <div className="mb-2 text-sm font-semibold text-slate-800">대체로 함께 비교하는 부위</div>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedCut.alternatives.map((item) => (
-                        <Badge key={item} variant="outline" className="rounded-full border-orange-200">
-                          {item}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </div>
-      </section>
+                {detailHref ? (
+                  <Link href={detailHref} className="inline-block">
+                    <Button className="rounded-full bg-orange-500 text-white hover:bg-orange-600">
+                      상세페이지 보기
+                    </Button>
+                  </Link>
+                ) : (
+                  <Button
+                    disabled
+                    className="rounded-full bg-slate-300 text-white hover:bg-slate-300"
+                  >
+                    상세페이지 준비중
+                  </Button>
+                )}
+              </div>
+            );
+          })}
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -1027,7 +1087,6 @@ function HomeView({
   setPrefs,
   handleSearch,
   applyQuickKeyword,
-  openDetailPage,
   setSelectedCut,
 }: {
   meatType: MeatType;
@@ -1041,7 +1100,6 @@ function HomeView({
   setPrefs: React.Dispatch<React.SetStateAction<Prefs>>;
   handleSearch: (value: string) => void;
   applyQuickKeyword: (type: "grill" | "stew" | "light") => void;
-  openDetailPage: (cut: MeatCut) => void;
   setSelectedCut: (cut: MeatCut) => void;
 }) {
   const currentComparisonPairs = comparisonPairsByMeat[meatType];
@@ -1068,7 +1126,9 @@ function HomeView({
 
                     <h1 className="text-4xl font-black tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
                       어떤 {meta.label}를 고를지
-                      <span className="block bg-gradient-to-r from-slate-900 to-orange-500 bg-clip-text text-transparent">한눈에 보는 가이드</span>
+                      <span className="block bg-gradient-to-r from-slate-900 to-orange-500 bg-clip-text text-transparent">
+                        한눈에 보는 가이드
+                      </span>
                     </h1>
 
                     <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
@@ -1076,13 +1136,28 @@ function HomeView({
                     </p>
 
                     <div className="mt-6 flex flex-wrap gap-3">
-                      <Button type="button" variant="outline" className="rounded-full border-orange-200 text-orange-600" onClick={() => applyQuickKeyword("grill")}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="rounded-full border-orange-200 text-orange-600"
+                        onClick={() => applyQuickKeyword("grill")}
+                      >
                         🔥 구이 위주
                       </Button>
-                      <Button type="button" variant="outline" className="rounded-full border-orange-200 text-orange-600" onClick={() => applyQuickKeyword("stew")}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="rounded-full border-orange-200 text-orange-600"
+                        onClick={() => applyQuickKeyword("stew")}
+                      >
                         🍲 국물·찜 위주
                       </Button>
-                      <Button type="button" variant="outline" className="rounded-full border-orange-200 text-orange-600" onClick={() => applyQuickKeyword("light")}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="rounded-full border-orange-200 text-orange-600"
+                        onClick={() => applyQuickKeyword("light")}
+                      >
                         🥗 담백한 쪽
                       </Button>
                     </div>
@@ -1097,7 +1172,10 @@ function HomeView({
                           className="h-12 rounded-2xl border-orange-100 bg-white pl-11 shadow-sm focus-visible:ring-orange-300"
                         />
                       </div>
-                      <Button className="h-12 rounded-2xl bg-orange-500 px-6 text-white shadow-lg shadow-orange-200 hover:bg-orange-600" onClick={() => handleSearch(query)}>
+                      <Button
+                        className="h-12 rounded-2xl bg-orange-500 px-6 text-white shadow-lg shadow-orange-200 hover:bg-orange-600"
+                        onClick={() => handleSearch(query)}
+                      >
                         부위 찾기
                       </Button>
                     </div>
@@ -1106,10 +1184,16 @@ function HomeView({
                   <div className="relative z-10">
                     <div className="rounded-[2rem] border border-white/70 bg-gradient-to-br from-slate-900 to-slate-800 p-5 text-white shadow-[0_20px_50px_rgba(15,23,42,0.20)]">
                       <div className="mb-4">
-                        <div className="text-sm text-orange-200">오늘의 추천 부위</div>
-                        <div className="text-3xl font-bold">{selectedCut.name}</div>
+                        <div className="text-sm text-orange-200">
+                          오늘의 추천 부위
+                        </div>
+                        <div className="text-3xl font-bold">
+                          {selectedCut.name}
+                        </div>
                       </div>
-                      <p className="mb-5 text-sm leading-6 text-slate-300">{selectedCut.short}</p>
+                      <p className="mb-5 text-sm leading-6 text-slate-300">
+                        {selectedCut.short}
+                      </p>
 
                       <div className="grid gap-3">
                         <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
@@ -1117,31 +1201,51 @@ function HomeView({
                             <Heart className="h-4 w-4 text-orange-300" />
                             지방 느낌
                           </div>
-                          <div className="font-semibold">{getFatLabel(selectedCut.profile.fat)}</div>
+                          <div className="font-semibold">
+                            {getFatLabel(selectedCut.profile.fat)}
+                          </div>
                         </div>
                         <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
                           <div className="mb-2 flex items-center gap-2 text-sm text-slate-300">
                             <Beef className="h-4 w-4 text-orange-300" />
                             풍미 느낌
                           </div>
-                          <div className="font-semibold">{getFlavorLabel(selectedCut.profile.flavor)}</div>
+                          <div className="font-semibold">
+                            {getFlavorLabel(selectedCut.profile.flavor)}
+                          </div>
                         </div>
                         <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
                           <div className="mb-2 flex items-center gap-2 text-sm text-slate-300">
                             <Scale className="h-4 w-4 text-orange-300" />
                             식감 느낌
                           </div>
-                          <div className="font-semibold">{getTenderLabel(selectedCut.profile.tender)}</div>
+                          <div className="font-semibold">
+                            {getTenderLabel(selectedCut.profile.tender)}
+                          </div>
                         </div>
                       </div>
 
                       <div className="mt-5 flex flex-wrap gap-2">
                         {selectedCut.cooking.map((item) => (
-                          <Badge key={item} className="rounded-full border-0 bg-orange-500/20 text-orange-100 hover:bg-orange-500/20">
+                          <Badge
+                            key={item}
+                            className="rounded-full border-0 bg-orange-500/20 text-orange-100 hover:bg-orange-500/20"
+                          >
                             {item}
                           </Badge>
                         ))}
                       </div>
+
+                      {getDetailHref(selectedCut) && (
+                        <div className="mt-5">
+                          <Link href={getDetailHref(selectedCut)!}>
+                            <Button className="w-full rounded-2xl bg-orange-500 text-white hover:bg-orange-600">
+                              자세히 보기
+                              <ChevronRight className="ml-1 h-4 w-4" />
+                            </Button>
+                          </Link>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1152,22 +1256,36 @@ function HomeView({
               <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
                 <Card className="rounded-[2rem] border-orange-100 bg-white/90 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
                   <CardHeader>
-                    <CardTitle className="text-2xl text-slate-950">부위 위치 한눈에 보기</CardTitle>
+                    <CardTitle className="text-2xl text-slate-950">
+                      부위 위치 한눈에 보기
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <MeatMap meatType={meatType} selected={selectedCut} onSelect={setSelectedCut} />
-                    <p className="mt-4 text-sm text-slate-600">지도의 부위를 누르면 정보가 바뀝니다.</p>
+                    <MeatMap
+                      meatType={meatType}
+                      selected={selectedCut}
+                      onSelect={setSelectedCut}
+                    />
+                    <p className="mt-4 text-sm text-slate-600">
+                      지도의 부위를 누르면 정보가 바뀝니다.
+                    </p>
                   </CardContent>
                 </Card>
 
                 <Card className="rounded-[2rem] border-orange-100 bg-white/90 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
                   <CardHeader>
-                    <CardTitle className="text-2xl text-slate-950">{selectedCut.name} 요약</CardTitle>
+                    <CardTitle className="text-2xl text-slate-950">
+                      {selectedCut.name} 요약
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-5">
                     <div className="flex flex-wrap gap-2">
                       {selectedCut.tags.map((tag) => (
-                        <Badge key={tag} variant="outline" className="rounded-full border-orange-200">
+                        <Badge
+                          key={tag}
+                          variant="outline"
+                          className="rounded-full border-orange-200"
+                        >
                           #{tag}
                         </Badge>
                       ))}
@@ -1177,39 +1295,76 @@ function HomeView({
 
                     <div className="grid gap-4 sm:grid-cols-2">
                       <InfoPill title="위치" value={selectedCut.location} />
-                      <InfoPill title="대표 용도" value={selectedCut.cooking.join(", ")} />
+                      <InfoPill
+                        title="대표 용도"
+                        value={selectedCut.cooking.join(", ")}
+                      />
                     </div>
 
                     <div className="rounded-2xl border border-orange-100 p-4">
-                      <div className="mb-2 text-sm font-semibold text-slate-800">대표 특징</div>
-                      <p className="text-sm leading-6 text-slate-600">{selectedCut.factNote}</p>
+                      <div className="mb-2 text-sm font-semibold text-slate-800">
+                        대표 특징
+                      </div>
+                      <p className="text-sm leading-6 text-slate-600">
+                        {selectedCut.factNote}
+                      </p>
                     </div>
+
+                    {getDetailHref(selectedCut) ? (
+                      <Link href={getDetailHref(selectedCut)!}>
+                        <Button className="w-full rounded-2xl bg-orange-500 text-white hover:bg-orange-600">
+                          자세히 보기
+                          <ChevronRight className="ml-1 h-4 w-4" />
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Button
+                        disabled
+                        className="w-full rounded-2xl bg-slate-300 text-white hover:bg-slate-300"
+                      >
+                        상세페이지 준비중
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               </div>
             </section>
 
             <section id="recommendation-section">
-              <RecommendationPanel cuts={currentCuts} prefs={prefs} setPrefs={setPrefs} />
+              <RecommendationPanel
+                cuts={currentCuts}
+                prefs={prefs}
+                setPrefs={setPrefs}
+              />
             </section>
 
             <section>
               <div className="mb-5 flex items-center gap-2">
                 <ArrowLeftRight className="h-5 w-5 text-orange-500" />
-                <h2 className="text-2xl font-bold text-slate-950">비슷한 부위 비교</h2>
+                <h2 className="text-2xl font-bold text-slate-950">
+                  비슷한 부위 비교
+                </h2>
               </div>
               <div className="grid gap-6 lg:grid-cols-2">
                 {currentComparisonPairs.map((pair) => (
-                  <Card key={pair.title} className="rounded-3xl border-orange-100 bg-white/90 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+                  <Card
+                    key={pair.title}
+                    className="rounded-3xl border-orange-100 bg-white/90 shadow-[0_10px_30px_rgba(15,23,42,0.06)]"
+                  >
                     <CardHeader>
                       <CardTitle className="text-lg">{pair.title}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3 text-sm">
                         {pair.rows.map(([label, value]) => (
-                          <div key={label} className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
+                          <div
+                            key={label}
+                            className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3"
+                          >
                             <span className="text-slate-600">{label}</span>
-                            <span className="font-semibold text-slate-900">{value}</span>
+                            <span className="font-semibold text-slate-900">
+                              {value}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -1222,11 +1377,13 @@ function HomeView({
             <section className="pb-14">
               <div className="mb-5 flex items-center justify-between gap-4">
                 <h2 className="text-2xl font-bold text-slate-950">부위 목록</h2>
-                <div className="text-sm text-slate-500">총 {filteredCuts.length}개</div>
+                <div className="text-sm text-slate-500">
+                  총 {filteredCuts.length}개
+                </div>
               </div>
               <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                 {filteredCuts.map((cut) => (
-                  <CutCard key={cut.id} cut={cut} onSelect={openDetailPage} />
+                  <CutCard key={cut.id} cut={cut} />
                 ))}
               </div>
             </section>
@@ -1241,7 +1398,6 @@ export default function MeatSelectorSite() {
   const [meatType, setMeatType] = useState<MeatType>("pork");
   const [query, setQuery] = useState("");
   const [prefs, setPrefs] = useState<Prefs>(defaultPrefs);
-  const [currentPage, setCurrentPage] = useState<PageMode>("home");
   const [selectedCut, setSelectedCut] = useState<MeatCut>(porkCuts[0]);
 
   const currentCuts = useMemo(() => getAllCutsByType(meatType), [meatType]);
@@ -1269,13 +1425,20 @@ export default function MeatSelectorSite() {
         cut.name.includes(normalized) ||
         cut.short.includes(normalized) ||
         cut.location.includes(normalized) ||
-        cut.tags.some((tag) => tag.includes(normalized) || normalized.includes(tag)) ||
-        cut.cooking.some((item) => item.includes(normalized) || normalized.includes(item))
+        cut.tags.some(
+          (tag) => tag.includes(normalized) || normalized.includes(tag)
+        ) ||
+        cut.cooking.some(
+          (item) => item.includes(normalized) || normalized.includes(item)
+        )
     );
 
     if (matchedCut) {
       setSelectedCut(matchedCut);
-      setCurrentPage("detail");
+      const target = document.getElementById("recommendation-section");
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     }
   };
 
@@ -1309,38 +1472,14 @@ export default function MeatSelectorSite() {
     scrollToRecommendation();
   };
 
-  const openDetailPage = (cut: MeatCut) => {
-    setSelectedCut(cut);
-    setCurrentPage("detail");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const goHome = () => {
-    setCurrentPage("home");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
   const handleChangeMeatType = (type: MeatType) => {
     const nextCuts = getAllCutsByType(type);
     setMeatType(type);
     setQuery("");
     setPrefs(defaultPrefs);
-    setCurrentPage("home");
     setSelectedCut(nextCuts[0]);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
-
-  if (currentPage === "detail") {
-    return (
-      <DetailView
-        meatType={meatType}
-        selectedCut={selectedCut}
-        setSelectedCut={setSelectedCut}
-        goHome={goHome}
-        changeMeatType={handleChangeMeatType}
-      />
-    );
-  }
 
   return (
     <HomeView
@@ -1355,7 +1494,6 @@ export default function MeatSelectorSite() {
       setPrefs={setPrefs}
       handleSearch={handleSearch}
       applyQuickKeyword={applyQuickKeyword}
-      openDetailPage={openDetailPage}
       setSelectedCut={setSelectedCut}
     />
   );
