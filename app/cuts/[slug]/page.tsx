@@ -2,14 +2,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   ArrowLeft,
-  MapPin,
   ChefHat,
-  ArrowRight,
   Sparkles,
   BadgeDollarSign,
   ShoppingCart,
+  Image as ImageIcon,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { allCuts } from "@/data/porkCuts";
@@ -20,11 +19,7 @@ export function generateStaticParams() {
   }));
 }
 
-// ✅ 오류 안나게 전부 따옴표 처리된 버전
-const priceGuideBySlug: Record<
-  string,
-  { priceText: string; note: string }
-> = {
+const priceGuideBySlug: Record<string, { priceText: string; note: string }> = {
   "samgyeopsal": {
     priceText: "100g 기준: 약 2,000원~3,500원",
     note: "브랜드, 냉장/냉동에 따라 차이 있음",
@@ -89,19 +84,36 @@ function getDefaultPriceGuide(meatType: string) {
   if (meatType === "pork") {
     return {
       priceText: "100g 기준: 약 1,500원~3,000원",
-      note: "돼지고기 평균 가격",
+      note: "돼지고기 평균 가격 참고용",
     };
   }
+
   if (meatType === "beef") {
     return {
       priceText: "100g 기준: 약 5,000원~12,000원",
-      note: "소고기 평균 가격",
+      note: "소고기 평균 가격 참고용",
     };
   }
+
   return {
     priceText: "100g 기준: 약 700원~2,000원",
-    note: "닭고기 평균 가격",
+    note: "닭고기 평균 가격 참고용",
   };
+}
+
+function InfoBox({
+  title,
+  value,
+}: {
+  title: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <div className="text-sm text-slate-500">{title}</div>
+      <div className="mt-1 font-semibold text-slate-900">{value}</div>
+    </div>
+  );
 }
 
 export default function CutDetailPage({
@@ -115,86 +127,193 @@ export default function CutDetailPage({
     notFound();
   }
 
-  const relatedCuts = allCuts.filter(
-    (item) => item.slug !== cut.slug && item.meatType === cut.meatType
-  );
-
   const priceGuide =
     priceGuideBySlug[cut.slug] ?? getDefaultPriceGuide(cut.meatType);
 
   return (
-    <div className="min-h-screen bg-white text-slate-900">
-      <section className="mx-auto max-w-[1000px] px-4 py-8">
-
-        {/* 뒤로가기 */}
-        <Link href="/">
-          <Button variant="outline" className="mb-6">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            돌아가기
-          </Button>
-        </Link>
+    <div className="min-h-screen bg-[linear-gradient(to_bottom,_#fff7ed,_#ffffff_28%,_#f8fafc)] text-slate-900">
+      <section className="mx-auto max-w-[1100px] px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mb-6">
+          <Link href="/">
+            <Button
+              variant="outline"
+              className="rounded-full border-orange-200 text-slate-700 hover:bg-orange-50"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              메인으로 돌아가기
+            </Button>
+          </Link>
+        </div>
 
         {/* 한줄 요약 */}
-        <div className="mb-6 p-5 border rounded-xl bg-orange-50">
-          <h1 className="text-2xl font-bold mb-2">{cut.name}</h1>
-          <p>{cut.shortDescription}</p>
+        <div className="mb-6 rounded-[2rem] border border-orange-200 bg-orange-50 px-6 py-5">
+          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-orange-600">
+            <Sparkles className="h-4 w-4" />
+            한줄 요약
+          </div>
+
+          <h1 className="text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
+            {cut.name}
+          </h1>
+
+          <p className="mt-3 text-base leading-7 text-slate-700">
+            {cut.shortDescription}
+          </p>
         </div>
 
-        {/* 이미지 + 특징 */}
-        <div className="grid md:grid-cols-2 gap-4 mb-6">
-          <img src={cut.locationImage} className="rounded-xl border" />
-          <img src={cut.meatImage} className="rounded-xl border" />
-        </div>
+        {/* 첫 화면: 큰 이미지 자리 + 특징 */}
+        <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+          {/* 큰 이미지 자리 */}
+          <Card className="overflow-hidden rounded-[2rem] border-2 border-slate-200 bg-white shadow-[0_14px_35px_rgba(15,23,42,0.05)]">
+            <CardContent className="p-6">
+              <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-800">
+                <ImageIcon className="h-4 w-4 text-orange-500" />
+                대표 이미지 영역
+              </div>
 
-        <div className="grid grid-cols-3 gap-3 mb-6 text-center">
-          <div className="p-3 border rounded-xl">
-            <div>식감</div>
-            <div className="font-bold">{cut.texture}</div>
-          </div>
-          <div className="p-3 border rounded-xl">
-            <div>풍미</div>
-            <div className="font-bold">{cut.flavor}</div>
-          </div>
-          <div className="p-3 border rounded-xl">
-            <div>지방</div>
-            <div className="font-bold">{cut.fat}</div>
-          </div>
+              <div className="flex min-h-[360px] items-center justify-center rounded-[1.5rem] border-2 border-dashed border-orange-200 bg-orange-50/40">
+                <div className="text-center">
+                  <div className="text-base font-semibold text-slate-800">
+                    여기에 {cut.name} 대표 이미지 들어갈 자리
+                  </div>
+                  <p className="mt-2 text-sm text-slate-500">
+                    나중에 고기 사진 또는 부위 대표 이미지를 넣으면 됩니다.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 고기 특징 */}
+          <Card className="rounded-[2rem] border-2 border-slate-200 bg-white shadow-[0_14px_35px_rgba(15,23,42,0.05)]">
+            <CardContent className="p-6 space-y-4">
+              <div>
+                <div className="mb-2 text-sm font-semibold text-orange-600">
+                  고기 특징
+                </div>
+                <h2 className="text-2xl font-black tracking-tight text-slate-950">
+                  {cut.name} 빠르게 보기
+                </h2>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {cut.tags.map((tag) => (
+                  <Badge
+                    key={tag}
+                    variant="outline"
+                    className="rounded-full border-orange-200 bg-white"
+                  >
+                    #{tag}
+                  </Badge>
+                ))}
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <InfoBox title="식감" value={cut.texture} />
+                <InfoBox title="풍미" value={cut.flavor} />
+                <div className="sm:col-span-2">
+                  <InfoBox title="지방감" value={cut.fat} />
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-orange-100 bg-orange-50/40 p-4">
+                <div className="mb-2 text-sm font-semibold text-slate-800">
+                  위치
+                </div>
+                <p className="text-sm leading-6 text-slate-700">{cut.location}</p>
+              </div>
+
+              <div className="rounded-2xl border border-orange-100 p-4">
+                <div className="mb-3 text-sm font-semibold text-slate-800">
+                  고를 때 팁
+                </div>
+
+                <div className="space-y-3">
+                  {cut.tips.slice(0, 3).map((tip) => (
+                    <div
+                      key={tip}
+                      className="rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-700"
+                    >
+                      {tip}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* 추천요리 */}
-        <div className="mb-6">
-          <div className="font-bold mb-2">추천 요리</div>
-          {cut.cooking.map((c) => (
-            <Badge key={c} className="mr-2">{c}</Badge>
-          ))}
+        <div className="mt-6">
+          <Card className="rounded-[2rem] border-2 border-slate-200 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+            <CardContent className="p-6">
+              <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-800">
+                <ChefHat className="h-4 w-4 text-orange-500" />
+                추천 요리
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {cut.cooking.map((item) => (
+                  <Badge
+                    key={item}
+                    variant="outline"
+                    className="rounded-full border-orange-200 bg-white"
+                  >
+                    {item}
+                  </Badge>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* 가격 */}
-        <div className="mb-6 p-4 border rounded-xl">
-          <div className="font-bold mb-2">가격 참고</div>
-          <div>{priceGuide.priceText}</div>
-          <div className="text-sm text-gray-500">{priceGuide.note}</div>
-        </div>
+        {/* 가격 참고 */}
+        <div className="mt-6">
+          <Card className="rounded-[2rem] border-2 border-slate-200 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.05)]">
+            <CardContent className="p-6">
+              <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-800">
+                <BadgeDollarSign className="h-4 w-4 text-orange-500" />
+                가격 참고
+              </div>
 
-        {/* 쿠팡 자리 */}
-        <div className="mb-6 p-5 border border-dashed rounded-xl">
-          👉 여기에 쿠팡 링크 들어갈 예정
-        </div>
-
-        {/* 비슷한 부위 */}
-        <div>
-          <div className="font-bold mb-3">비슷한 부위</div>
-          <div className="grid md:grid-cols-3 gap-3">
-            {relatedCuts.slice(0, 3).map((item) => (
-              <Link key={item.slug} href={`/cuts/${item.slug}`}>
-                <div className="p-3 border rounded-xl hover:bg-gray-50">
-                  {item.name}
+              <div className="rounded-2xl border border-orange-100 bg-orange-50/50 p-4">
+                <div className="text-lg font-bold text-slate-950">
+                  {priceGuide.priceText}
                 </div>
-              </Link>
-            ))}
-          </div>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  {priceGuide.note}
+                </p>
+              </div>
+
+              <p className="mt-3 text-xs leading-5 text-slate-500">
+                실제 판매가는 브랜드, 원산지, 냉장/냉동, 손질 상태, 행사 여부에 따라
+                달라질 수 있는 참고용 정보입니다.
+              </p>
+            </CardContent>
+          </Card>
         </div>
 
+        {/* 쿠팡 자리 크게 */}
+        <div className="mt-6">
+          <Card className="rounded-[2rem] border-2 border-dashed border-orange-200 bg-orange-50/40 shadow-[0_10px_30px_rgba(15,23,42,0.03)]">
+            <CardContent className="p-8">
+              <div className="mb-2 text-sm font-semibold text-orange-600">
+                구매 링크 영역
+              </div>
+              <div className="text-2xl font-black tracking-tight text-slate-900">
+                나중에 쿠팡 제휴 링크 들어갈 자리
+              </div>
+              <p className="mt-3 text-sm leading-6 text-slate-600">
+                추후 제휴 설정 후 이 영역에
+                <span className="font-semibold text-slate-900">
+                  {" "}
+                  “온라인 가격 보기” / “구매하러 가기”
+                </span>
+                버튼을 크게 넣으면 됩니다.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
       </section>
     </div>
   );
