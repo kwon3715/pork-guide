@@ -808,119 +808,133 @@ function HomeView({
           <Sidebar meatType={meatType} onChange={setMeatType} />
 
           <div className="space-y-6">
-            <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-              <SectionBox
-                label="START HERE"
-                title={`${meta.label} 바로 고르기`}
-                icon={<Search className="h-4 w-4" />}
-              >
-                <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-4 py-2 text-sm font-medium text-orange-700">
-                  <Sparkles className="h-4 w-4" />
-                  {meta.hero}
-                </div>
+            <section>
+              <div className="relative overflow-hidden rounded-[2rem] border border-orange-100 bg-white/90 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8 lg:p-10">
+                <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-orange-100 blur-3xl" />
+                <div className="pointer-events-none absolute -bottom-20 left-10 h-44 w-44 rounded-full bg-amber-50 blur-3xl" />
 
-                <p className="max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
-                  정확한 수치처럼 보이는 표현은 줄이고, 부위의 위치·대표 용도·느낌을
-                  보수적으로 정리한 안내형 버전입니다.
-                </p>
-
-                <div className="mt-6 rounded-3xl border-2 border-slate-200 bg-slate-50 p-4">
-                  <div className="mb-3 text-sm font-semibold text-slate-800">
-                    부위를 검색하거나 빠른 키워드로 추천 영역으로 이동할 수 있어요.
-                  </div>
-
-                  <div className="flex flex-col gap-3 sm:flex-row">
-                    <div className="relative flex-1">
-                      <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                      <Input
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        placeholder={meta.placeholder}
-                        className="h-12 rounded-2xl border-orange-100 bg-white pl-11 shadow-sm focus-visible:ring-orange-300"
-                      />
+                <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+                  <div className="relative z-10">
+                    <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-4 py-2 text-sm font-medium text-orange-700">
+                      <Sparkles className="h-4 w-4" />
+                      {meta.hero}
                     </div>
-                    <Button
-                      className="h-12 rounded-2xl bg-orange-500 px-6 text-white shadow-lg shadow-orange-200 hover:bg-orange-600"
-                      onClick={() => handleSearch(query)}
-                    >
-                      부위 찾기
-                    </Button>
+
+                    <h1 className="text-4xl font-black tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
+                      어떤 {meta.label}를 고를지
+                      <span className="block bg-gradient-to-r from-slate-900 to-orange-500 bg-clip-text text-transparent">
+                        한눈에 보는 가이드
+                      </span>
+                    </h1>
+
+                    <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
+                      정확한 수치처럼 보이는 표현은 줄이고, 부위의 위치·대표 용도·느낌을 보수적으로 정리한 안내형 버전입니다.
+                    </p>
+
+                    <div className="mt-6 flex flex-wrap gap-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="rounded-full border-orange-200 text-orange-600"
+                        onClick={() => applyQuickKeyword("grill")}
+                      >
+                        🔥 구이 위주
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="rounded-full border-orange-200 text-orange-600"
+                        onClick={() => applyQuickKeyword("stew")}
+                      >
+                        🍲 국물·찜 위주
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="rounded-full border-orange-200 text-orange-600"
+                        onClick={() => applyQuickKeyword("light")}
+                      >
+                        🥗 담백한 쪽
+                      </Button>
+                    </div>
+
+                    <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                      <div className="relative flex-1">
+                        <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                        <Input
+                          value={query}
+                          onChange={(e) => setQuery(e.target.value)}
+                          placeholder={meta.placeholder}
+                          className="h-12 rounded-2xl border-orange-100 bg-white pl-11 shadow-sm focus-visible:ring-orange-300"
+                        />
+                      </div>
+                      <Button
+                        className="h-12 rounded-2xl bg-orange-500 px-6 text-white shadow-lg shadow-orange-200 hover:bg-orange-600"
+                        onClick={() => handleSearch(query)}
+                      >
+                        부위 찾기
+                      </Button>
+                    </div>
                   </div>
 
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="rounded-full border-orange-200 bg-white text-orange-600 hover:border-orange-300 hover:bg-orange-50"
-                      onClick={() => applyQuickKeyword("grill")}
-                    >
-                      <Flame className="mr-2 h-4 w-4" />
-                      구이 위주
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="rounded-full border-orange-200 bg-white text-orange-600 hover:border-orange-300 hover:bg-orange-50"
-                      onClick={() => applyQuickKeyword("stew")}
-                    >
-                      <Flame className="mr-2 h-4 w-4" />
-                      국물·찜 위주
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="rounded-full border-orange-200 bg-white text-orange-600 hover:border-orange-300 hover:bg-orange-50"
-                      onClick={() => applyQuickKeyword("light")}
-                    >
-                      <Flame className="mr-2 h-4 w-4" />
-                      담백한 쪽
-                    </Button>
+                  <div className="relative z-10">
+                    <div className="rounded-[2rem] border border-white/70 bg-gradient-to-br from-slate-900 to-slate-800 p-5 text-white shadow-[0_20px_50px_rgba(15,23,42,0.20)]">
+                      <div className="mb-4">
+                        <div className="text-sm text-orange-200">오늘의 추천 부위</div>
+                        <div className="text-3xl font-bold">{selectedCut.name}</div>
+                      </div>
+                      <p className="mb-5 text-sm leading-6 text-slate-300">
+                        {selectedCut.shortDescription}
+                      </p>
+
+                      <div className="grid gap-3">
+                        <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
+                          <div className="mb-2 flex items-center gap-2 text-sm text-slate-300">
+                            <Heart className="h-4 w-4 text-orange-300" />
+                            지방 느낌
+                          </div>
+                          <div className="font-semibold">{getFatLabel(selectedCut.fat)}</div>
+                        </div>
+                        <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
+                          <div className="mb-2 flex items-center gap-2 text-sm text-slate-300">
+                            <Beef className="h-4 w-4 text-orange-300" />
+                            풍미 느낌
+                          </div>
+                          <div className="font-semibold">{getFlavorLabel(selectedCut.flavor)}</div>
+                        </div>
+                        <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
+                          <div className="mb-2 flex items-center gap-2 text-sm text-slate-300">
+                            <Scale className="h-4 w-4 text-orange-300" />
+                            식감 느낌
+                          </div>
+                          <div className="font-semibold">{getTenderLabel(selectedCut.texture)}</div>
+                        </div>
+                      </div>
+
+                      <div className="mt-5 flex flex-wrap gap-2">
+                        {selectedCut.cooking.map((item) => (
+                          <Badge
+                            key={item}
+                            className="rounded-full border-0 bg-orange-500/20 text-orange-100 hover:bg-orange-500/20"
+                          >
+                            {item}
+                          </Badge>
+                        ))}
+                      </div>
+
+                      <div className="mt-5">
+                        <Link href={`/cuts/${selectedCut.slug}`}>
+                          <Button className="w-full rounded-2xl bg-orange-500 text-white hover:bg-orange-600">
+                            자세히 보기
+                            <ChevronRight className="ml-1 h-4 w-4" />
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </SectionBox>
-
-              <SectionBox
-                label="FEATURED"
-                title="오늘의 추천 부위"
-                icon={<Star className="h-4 w-4" />}
-                dark
-              >
-                <div className="mb-4">
-                  <div className="text-sm text-orange-200">현재 선택된 부위</div>
-                  <div className="text-3xl font-bold">{selectedCut.name}</div>
-                </div>
-
-                <p className="mb-5 text-sm leading-6 text-slate-300">
-                  {selectedCut.shortDescription}
-                </p>
-
-                <div className="grid gap-3">
-                  <InfoPill title="지방 느낌" value={getFatLabel(selectedCut.fat)} dark />
-                  <InfoPill title="풍미 느낌" value={getFlavorLabel(selectedCut.flavor)} dark />
-                  <InfoPill title="식감 느낌" value={getTenderLabel(selectedCut.texture)} dark />
-                </div>
-
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {selectedCut.cooking.map((item) => (
-                    <Badge
-                      key={item}
-                      className="rounded-full border-0 bg-orange-500/20 text-orange-100 hover:bg-orange-500/20"
-                    >
-                      {item}
-                    </Badge>
-                  ))}
-                </div>
-
-                <div className="mt-5">
-                  <Link href={`/cuts/${selectedCut.slug}`}>
-                    <Button className="w-full rounded-2xl bg-orange-500 text-white hover:bg-orange-600">
-                      자세히 보기
-                      <ChevronRight className="ml-1 h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
-              </SectionBox>
-            </div>
+              </div>
+            </section>
 
             <div className="grid gap-6 xl:grid-cols-[1.02fr_0.98fr]">
               <SectionBox
