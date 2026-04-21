@@ -6,13 +6,18 @@ import {
   Search,
   Beef,
   PiggyBank,
-  Flame,
+  Drumstick,
   Sparkles,
   Scale,
   Heart,
   ChevronRight,
   ArrowLeftRight,
+  MapPinned,
+  Soup,
+  Flame,
+  Salad,
   RotateCcw,
+  CheckCircle2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -55,25 +60,36 @@ const meatMeta: Record<
     hero: string;
     placeholder: string;
     sideDesc: string;
+    heroDesc: string;
+    quickTags: string[];
   }
 > = {
   pork: {
     label: "돼지고기",
-    hero: "돼지고기 부위를 쉽게 고르는 가이드",
+    hero: "돼지고기 부위를 빠르게 고르는 가이드",
     placeholder: "삼겹살, 목살, 안심, 앞다리처럼 검색해보세요",
     sideDesc: "삼겹살, 목살, 등심, 안심 등",
+    heroDesc:
+      "복잡한 설명보다 위치, 느낌, 대표 용도를 먼저 보여줘서 바로 고르기 쉽게 만든 구조입니다.",
+    quickTags: ["구이", "수육", "담백", "가성비"],
   },
   beef: {
     label: "소고기",
-    hero: "소고기 부위를 쉽게 고르는 가이드",
+    hero: "소고기 부위를 빠르게 고르는 가이드",
     placeholder: "등심, 채끝, 안심, 양지처럼 검색해보세요",
     sideDesc: "등심, 채끝, 안심, 양지 등",
+    heroDesc:
+      "구이용인지, 국물용인지, 조금 더 부드러운지 중심으로 빠르게 비교할 수 있습니다.",
+    quickTags: ["구이", "국물요리", "부드러움", "풍미"],
   },
   chicken: {
     label: "닭고기",
-    hero: "닭고기 부위를 쉽게 고르는 가이드",
+    hero: "닭고기 부위를 빠르게 고르는 가이드",
     placeholder: "가슴살, 안심, 날개, 닭다리처럼 검색해보세요",
     sideDesc: "가슴살, 안심, 날개, 닭다리 등",
+    heroDesc:
+      "식단용, 튀김용, 반찬용처럼 실제 고르는 기준에 맞춰 한눈에 정리했습니다.",
+    quickTags: ["식단", "튀김", "부드러움", "담백"],
   },
 };
 
@@ -247,15 +263,6 @@ function getRecommendationReasons(cut: CutItem, prefs: Prefs) {
   return reasons.slice(0, 3);
 }
 
-function InfoPill({ title, value }: { title: string; value: string }) {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-      <div className="text-sm text-slate-500">{title}</div>
-      <div className="mt-1 font-semibold text-slate-900">{value}</div>
-    </div>
-  );
-}
-
 function SectionTitle({
   title,
   icon,
@@ -269,9 +276,35 @@ function SectionTitle({
     <div className="mb-5 flex items-center justify-between gap-4">
       <div className="flex items-center gap-2">
         {icon}
-        <h2 className="text-2xl font-bold text-slate-950">{title}</h2>
+        <h2 className="text-2xl font-bold tracking-tight text-slate-950">{title}</h2>
       </div>
       {right}
+    </div>
+  );
+}
+
+function InfoPill({
+  title,
+  value,
+  tone = "default",
+}: {
+  title: string;
+  value: string;
+  tone?: "default" | "dark";
+}) {
+  if (tone === "dark") {
+    return (
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
+        <div className="text-sm text-slate-300">{title}</div>
+        <div className="mt-1 font-semibold text-white">{value}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <div className="text-sm text-slate-500">{title}</div>
+      <div className="mt-1 font-semibold text-slate-900">{value}</div>
     </div>
   );
 }
@@ -295,11 +328,20 @@ function Sidebar({
 }) {
   return (
     <aside className="w-full lg:sticky lg:top-6 lg:h-fit">
-      <Card className="overflow-hidden rounded-[2rem] border-orange-100 bg-white/90 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-xl">고기 선택</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
+      <div className="overflow-hidden rounded-[2rem] border border-orange-100 bg-white/95 p-4 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+        <div className="mb-4 px-2">
+          <div className="text-xs font-semibold uppercase tracking-[0.18em] text-orange-500">
+            Select
+          </div>
+          <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-950">
+            고기 선택
+          </h2>
+          <p className="mt-1 text-sm leading-6 text-slate-500">
+            종류를 먼저 고르면 아래 내용이 바로 바뀝니다.
+          </p>
+        </div>
+
+        <div className="space-y-3">
           {(["pork", "beef", "chicken"] as MeatType[]).map((type) => {
             const active = meatType === type;
             const icon =
@@ -308,56 +350,54 @@ function Sidebar({
               ) : type === "beef" ? (
                 <Beef className="h-5 w-5" />
               ) : (
-                <Flame className="h-5 w-5" />
+                <Drumstick className="h-5 w-5" />
               );
 
             return (
-              <Button
+              <button
                 key={type}
                 type="button"
-                variant="secondary"
-                active={active}
-                fullWidth
-                className="min-h-[76px] justify-start rounded-2xl px-4 py-4 text-left"
                 onClick={() => onChange(type)}
+                className={`group flex w-full items-center gap-4 rounded-[1.5rem] border px-4 py-4 text-left transition-all duration-200 ${
+                  active
+                    ? "border-orange-500 bg-gradient-to-r from-orange-500 to-orange-400 text-white shadow-[0_14px_30px_rgba(249,115,22,0.28)]"
+                    : "border-slate-200 bg-white hover:-translate-y-0.5 hover:border-orange-200 hover:bg-orange-50/50"
+                }`}
               >
                 <div
-                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${
+                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl transition ${
                     active
-                      ? "bg-white/20 text-white"
-                      : "bg-slate-100 text-slate-700"
+                      ? "bg-white/15 text-white"
+                      : "bg-slate-100 text-slate-700 group-hover:bg-white"
                   }`}
                 >
                   {icon}
                 </div>
+
                 <div className="min-w-0">
-                  <div className="font-semibold">{meatMeta[type].label}</div>
-                  <div
-                    className={`text-sm ${
-                      active ? "text-white/90" : "text-slate-500"
-                    }`}
-                  >
+                  <div className={`font-bold ${active ? "text-white" : "text-slate-900"}`}>
+                    {meatMeta[type].label}
+                  </div>
+                  <div className={`mt-1 text-sm ${active ? "text-white/85" : "text-slate-500"}`}>
                     {meatMeta[type].sideDesc}
                   </div>
                 </div>
-              </Button>
+              </button>
             );
           })}
+        </div>
 
-          <div className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-600">
-            이 버전은{" "}
-            <span className="font-semibold text-slate-900">
-              정확한 숫자처럼 보이는 표현
-            </span>
-            을 줄이고,
-            <br />
-            <span className="font-semibold text-slate-900">
-              위치 · 특징 · 대표 용도
-            </span>{" "}
-            중심으로 보수적으로 정리했습니다.
+        <div className="mt-4 rounded-[1.5rem] border border-orange-100 bg-orange-50 p-4 text-sm leading-6 text-slate-700">
+          <div className="mb-2 flex items-center gap-2 font-semibold text-slate-900">
+            <CheckCircle2 className="h-4 w-4 text-orange-500" />
+            이 사이트 기준
           </div>
-        </CardContent>
-      </Card>
+          위치, 특징, 대표 용도를 먼저 보고
+          <br />
+          <span className="font-semibold text-slate-900">5~10초 안에 고르기 쉽게</span>
+          정리한 구조입니다.
+        </div>
+      </div>
     </aside>
   );
 }
@@ -381,8 +421,8 @@ function PorkMap({
   ];
 
   return (
-    <div className="relative mx-auto w-full max-w-[640px] rounded-3xl border border-orange-100 bg-white p-4">
-      <div className="relative overflow-hidden rounded-2xl bg-[#f3f4f6]">
+    <div className="relative mx-auto w-full max-w-[640px] rounded-[1.75rem] border border-orange-100 bg-white p-4">
+      <div className="relative overflow-hidden rounded-[1.5rem] bg-[#f3f4f6]">
         <svg viewBox="0 0 640 360" className="h-auto w-full">
           <rect width="640" height="360" fill="#f3f4f6" />
           <path d="M200 120 C240 90, 320 80, 420 100 C500 115, 560 150, 560 200 C560 260, 520 300, 440 310 C360 320, 260 310, 200 280 C150 250, 140 180, 200 120 Z" fill="#d1d5db" />
@@ -404,7 +444,7 @@ function PorkMap({
               variant={active ? "primary" : "secondary"}
               size="sm"
               className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full px-3 py-1 text-xs font-bold sm:text-sm ${
-                active ? "ring-4 ring-orange-200" : ""
+                active ? "ring-4 ring-orange-200" : "shadow-sm"
               }`}
               style={{ left: item.left, top: item.top }}
               onClick={() => {
@@ -440,8 +480,8 @@ function BeefMap({
   ];
 
   return (
-    <div className="relative mx-auto w-full max-w-[640px] rounded-3xl border border-orange-100 bg-white p-4">
-      <div className="relative overflow-hidden rounded-2xl bg-[#f3f4f6]">
+    <div className="relative mx-auto w-full max-w-[640px] rounded-[1.75rem] border border-orange-100 bg-white p-4">
+      <div className="relative overflow-hidden rounded-[1.5rem] bg-[#f3f4f6]">
         <svg viewBox="0 0 640 360" className="h-auto w-full">
           <rect width="640" height="360" fill="#f3f4f6" />
           <path d="M170 130 C210 85, 320 78, 465 98 C545 110, 585 150, 582 200 C580 270, 535 305, 455 310 C350 318, 250 312, 180 280 C145 262, 118 215, 130 170 C136 150, 148 138, 170 130 Z" fill="#d1d5db" />
@@ -463,7 +503,7 @@ function BeefMap({
               variant={active ? "primary" : "secondary"}
               size="sm"
               className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full px-3 py-1 text-xs font-bold sm:text-sm ${
-                active ? "ring-4 ring-orange-200" : ""
+                active ? "ring-4 ring-orange-200" : "shadow-sm"
               }`}
               style={{ left: item.left, top: item.top }}
               onClick={() => {
@@ -496,8 +536,8 @@ function ChickenMap({
   ];
 
   return (
-    <div className="relative mx-auto w-full max-w-[640px] rounded-3xl border border-orange-100 bg-white p-4">
-      <div className="relative overflow-hidden rounded-2xl bg-[#f3f4f6]">
+    <div className="relative mx-auto w-full max-w-[640px] rounded-[1.75rem] border border-orange-100 bg-white p-4">
+      <div className="relative overflow-hidden rounded-[1.5rem] bg-[#f3f4f6]">
         <svg viewBox="0 0 640 360" className="h-auto w-full">
           <rect width="640" height="360" fill="#f3f4f6" />
           <ellipse cx="360" cy="180" rx="140" ry="100" fill="#d1d5db" />
@@ -532,7 +572,7 @@ function ChickenMap({
               variant={active ? "primary" : "secondary"}
               size="sm"
               className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full px-3 py-1 text-xs font-bold sm:text-sm ${
-                active ? "ring-4 ring-orange-200" : ""
+                active ? "ring-4 ring-orange-200" : "shadow-sm"
               }`}
               style={{ left: item.left, top: item.top }}
               onClick={() => {
@@ -558,24 +598,23 @@ function MeatMap({
   selected: CutItem;
   onSelect: (cut: CutItem) => void;
 }) {
-  if (meatType === "pork") {
-    return <PorkMap selected={selected} onSelect={onSelect} />;
-  }
-
-  if (meatType === "beef") {
-    return <BeefMap selected={selected} onSelect={onSelect} />;
-  }
-
+  if (meatType === "pork") return <PorkMap selected={selected} onSelect={onSelect} />;
+  if (meatType === "beef") return <BeefMap selected={selected} onSelect={onSelect} />;
   return <ChickenMap selected={selected} onSelect={onSelect} />;
 }
 
 function CutCard({ cut }: { cut: CutItem }) {
   return (
-    <Card className="overflow-hidden rounded-3xl border-orange-100 bg-white/90 shadow-[0_10px_30px_rgba(15,23,42,0.06)] transition hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(15,23,42,0.10)]">
+    <Card className="overflow-hidden rounded-[1.75rem] border-slate-200 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.05)] transition hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(15,23,42,0.10)]">
       <CardContent className="p-5">
-        <div className="mb-4">
-          <h3 className="text-lg font-bold text-slate-900">{cut.name}</h3>
-          <p className="mt-1 text-sm text-slate-600">{cut.shortDescription}</p>
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div>
+            <h3 className="text-lg font-black tracking-tight text-slate-950">{cut.name}</h3>
+            <p className="mt-1 text-sm leading-6 text-slate-600">{cut.shortDescription}</p>
+          </div>
+          <div className="rounded-full bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-600">
+            {cut.meatType === "pork" ? "돼지" : cut.meatType === "beef" ? "소" : "닭"}
+          </div>
         </div>
 
         <div className="mb-4 flex flex-wrap gap-2">
@@ -583,14 +622,14 @@ function CutCard({ cut }: { cut: CutItem }) {
             <Badge
               key={tag}
               variant="outline"
-              className="rounded-full border-orange-200 bg-white"
+              className="rounded-full border-orange-200 bg-white text-slate-700"
             >
               #{tag}
             </Badge>
           ))}
         </div>
 
-        <div className="mb-5 space-y-3">
+        <div className="mb-5 grid gap-3">
           <InfoPill title="지방 느낌" value={getFatLabel(cut.fat)} />
           <InfoPill title="대표 용도" value={cut.cooking.join(", ")} />
         </div>
@@ -627,11 +666,19 @@ function RecommendationPanel({
   }, [cuts, prefs]);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-      <Card className="rounded-3xl border-orange-100 bg-white/90 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
-        <CardHeader>
+    <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+      <Card className="rounded-[2rem] border-orange-100 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
+        <CardHeader className="pb-3">
           <div className="flex items-center justify-between gap-3">
-            <CardTitle className="text-xl">상황별 추천 받기</CardTitle>
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-[0.16em] text-orange-500">
+                Recommend
+              </div>
+              <CardTitle className="mt-2 text-2xl font-black tracking-tight text-slate-950">
+                상황별 추천 받기
+              </CardTitle>
+            </div>
+
             <Button
               type="button"
               variant="secondary"
@@ -644,13 +691,14 @@ function RecommendationPanel({
             </Button>
           </div>
         </CardHeader>
+
         <CardContent className="space-y-6">
           {Object.entries(recommendationQuestions).map(([key, options]) => {
             const typedKey = key as keyof Prefs;
 
             return (
-              <div key={key}>
-                <div className="mb-3 text-sm font-semibold text-slate-800">
+              <div key={key} className="rounded-[1.5rem] border border-slate-200 bg-slate-50/70 p-4">
+                <div className="mb-3 text-sm font-bold text-slate-900">
                   {key === "cooking" && "어떻게 먹을 건가요?"}
                   {key === "texture" && "어떤 느낌을 원하나요?"}
                   {key === "fat" && "지방감은 어느 쪽이 좋나요?"}
@@ -685,31 +733,40 @@ function RecommendationPanel({
         </CardContent>
       </Card>
 
-      <Card className="rounded-3xl border-orange-100 bg-white/90 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
-        <CardHeader>
-          <CardTitle className="text-xl">추천 결과</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <div className="overflow-hidden rounded-[2rem] border border-slate-900 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 text-white shadow-[0_20px_55px_rgba(15,23,42,0.24)]">
+        <div className="border-b border-white/10 px-6 py-5">
+          <div className="text-xs font-semibold uppercase tracking-[0.16em] text-orange-300">
+            Result
+          </div>
+          <h3 className="mt-2 text-2xl font-black tracking-tight">추천 결과</h3>
+          <p className="mt-1 text-sm text-slate-300">
+            지금 선택 기준에 맞춰 보기 쉬운 순서로 정리했습니다.
+          </p>
+        </div>
+
+        <div className="space-y-4 p-6">
           {results.map((cut, idx) => (
-            <div key={cut.slug} className="rounded-2xl border border-orange-100 p-4">
+            <div
+              key={cut.slug}
+              className="rounded-[1.5rem] border border-white/10 bg-white/5 p-4 backdrop-blur"
+            >
               <div className="mb-2 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <Badge className="rounded-full bg-orange-500 text-white hover:bg-orange-500">
                     TOP {idx + 1}
                   </Badge>
-                  <div className="font-bold text-slate-900">{cut.name}</div>
+                  <div className="font-bold text-white">{cut.name}</div>
                 </div>
-                <div className="text-sm font-semibold text-slate-500">추천 참고용</div>
+                <div className="text-xs font-semibold text-slate-400">추천 참고용</div>
               </div>
 
-              <p className="mb-3 text-sm text-slate-600">{cut.shortDescription}</p>
+              <p className="mb-3 text-sm leading-6 text-slate-300">{cut.shortDescription}</p>
 
               <div className="mb-3 flex flex-wrap gap-2">
                 {cut.cooking.map((item) => (
                   <Badge
                     key={item}
-                    variant="outline"
-                    className="rounded-full border-orange-200 bg-white"
+                    className="rounded-full border-0 bg-white/10 text-slate-100 hover:bg-white/10"
                   >
                     {item}
                   </Badge>
@@ -721,7 +778,7 @@ function RecommendationPanel({
                   {cut.reasons.map((reason) => (
                     <Badge
                       key={reason}
-                      className="rounded-full border-0 bg-slate-100 text-slate-700 hover:bg-slate-100"
+                      className="rounded-full border-0 bg-orange-500/15 text-orange-100 hover:bg-orange-500/15"
                     >
                       {reason}
                     </Badge>
@@ -736,8 +793,28 @@ function RecommendationPanel({
               </Link>
             </div>
           ))}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HeroQuickCard({
+  title,
+  desc,
+  icon,
+}: {
+  title: string;
+  desc: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-orange-50 text-orange-500">
+        {icon}
+      </div>
+      <div className="font-bold text-slate-950">{title}</div>
+      <div className="mt-1 text-sm leading-6 text-slate-500">{desc}</div>
     </div>
   );
 }
@@ -773,181 +850,187 @@ function HomeView({
   const meta = meatMeta[meatType];
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(251,146,60,0.10),_transparent_30%),linear-gradient(to_bottom,_#f8fafc,_#ffffff,_#f1f5f9)] text-slate-900">
-      <section className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6 lg:px-8">
-        <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(251,146,60,0.10),_transparent_30%),linear-gradient(to_bottom,_#fff7ed,_#ffffff_28%,_#f8fafc)] text-slate-900">
+      <section className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-8">
+        <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
           <Sidebar meatType={meatType} onChange={setMeatType} />
 
-          <div className="space-y-6">
+          <div className="space-y-8">
             <section>
-              <div className="relative overflow-hidden rounded-[2rem] border border-orange-100 bg-white/90 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8 lg:p-10">
-                <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-orange-100 blur-3xl" />
-                <div className="pointer-events-none absolute -bottom-20 left-10 h-44 w-44 rounded-full bg-amber-50 blur-3xl" />
+              <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
+                <div className="relative overflow-hidden rounded-[2.25rem] border border-orange-100 bg-white p-6 shadow-[0_22px_60px_rgba(15,23,42,0.08)] sm:p-8 lg:p-10">
+                  <div className="pointer-events-none absolute -right-10 -top-10 h-44 w-44 rounded-full bg-orange-100 blur-3xl" />
+                  <div className="pointer-events-none absolute bottom-0 left-0 h-36 w-36 rounded-full bg-amber-50 blur-3xl" />
 
-                <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
                   <div className="relative z-10">
-                    <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-4 py-2 text-sm font-medium text-orange-700">
+                    <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-4 py-2 text-sm font-semibold text-orange-700">
                       <Sparkles className="h-4 w-4" />
                       {meta.hero}
                     </div>
 
-                    <h1 className="text-4xl font-black tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
-                      어떤 {meta.label}를 고를지
-                      <span className="block bg-gradient-to-r from-slate-900 to-orange-500 bg-clip-text text-transparent">
-                        한눈에 보는 가이드
+                    <h1 className="text-4xl font-black tracking-tight text-slate-950 sm:text-5xl xl:text-6xl">
+                      {meta.label}
+                      <span className="block bg-gradient-to-r from-slate-950 to-orange-500 bg-clip-text text-transparent">
+                        바로 고르는 사이트
                       </span>
                     </h1>
 
                     <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
-                      정확한 수치처럼 보이는 표현은 줄이고, 부위의 위치·대표 용도·느낌을
-                      보수적으로 정리한 안내형 버전입니다.
+                      {meta.heroDesc}
                     </p>
 
-                    <div className="mt-6 flex flex-wrap gap-3">
-                      <Button
-                        type="button"
-                        variant="chip"
-                        onClick={() => applyQuickKeyword("grill")}
-                      >
-                        🔥 구이 위주
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="chip"
-                        onClick={() => applyQuickKeyword("stew")}
-                      >
-                        🍲 국물·찜 위주
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="chip"
-                        onClick={() => applyQuickKeyword("light")}
-                      >
-                        🥗 담백한 쪽
-                      </Button>
+                    <div className="mt-6 flex flex-wrap gap-2">
+                      {meta.quickTags.map((tag) => (
+                        <div
+                          key={tag}
+                          className="rounded-full border border-orange-200 bg-white px-3 py-2 text-sm font-medium text-slate-700"
+                        >
+                          #{tag}
+                        </div>
+                      ))}
                     </div>
 
-                    <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                      <div className="relative flex-1">
-                        <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                        <Input
-                          value={query}
-                          onChange={(e) => setQuery(e.target.value)}
-                          placeholder={meta.placeholder}
-                          className="h-12 rounded-2xl border-orange-100 bg-white pl-11 shadow-sm focus-visible:ring-orange-300"
-                        />
+                    <div className="mt-8 rounded-[1.75rem] border border-slate-200 bg-slate-50/80 p-4 sm:p-5">
+                      <div className="mb-3 text-sm font-bold text-slate-900">
+                        부위를 바로 찾거나, 빠른 선택으로 추천으로 이동할 수 있어요.
                       </div>
-                      <Button
-                        variant="primary"
-                        className="h-12 px-6 shadow-lg shadow-orange-200"
-                        onClick={() => handleSearch(query)}
-                      >
-                        부위 찾기
-                      </Button>
+
+                      <div className="flex flex-col gap-3 sm:flex-row">
+                        <div className="relative flex-1">
+                          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                          <Input
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            placeholder={meta.placeholder}
+                            className="h-13 rounded-2xl border-slate-200 bg-white pl-11 text-sm shadow-sm focus-visible:ring-orange-300"
+                          />
+                        </div>
+
+                        <Button
+                          variant="primary"
+                          className="h-13 px-6 shadow-lg shadow-orange-200"
+                          onClick={() => handleSearch(query)}
+                        >
+                          부위 찾기
+                        </Button>
+                      </div>
+
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <Button type="button" variant="chip" onClick={() => applyQuickKeyword("grill")}>
+                          <Flame className="h-4 w-4" />
+                          구이 위주
+                        </Button>
+                        <Button type="button" variant="chip" onClick={() => applyQuickKeyword("stew")}>
+                          <Soup className="h-4 w-4" />
+                          국물·찜 위주
+                        </Button>
+                        <Button type="button" variant="chip" onClick={() => applyQuickKeyword("light")}>
+                          <Salad className="h-4 w-4" />
+                          담백한 쪽
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                      <HeroQuickCard
+                        title="부위 위치"
+                        desc="어디 부위인지 먼저 보고 고를 수 있어요."
+                        icon={<MapPinned className="h-5 w-5" />}
+                      />
+                      <HeroQuickCard
+                        title="핵심 특징"
+                        desc="지방감, 풍미, 식감 위주로 짧게 정리했어요."
+                        icon={<Heart className="h-5 w-5" />}
+                      />
+                      <HeroQuickCard
+                        title="대표 용도"
+                        desc="구이, 국물, 튀김처럼 용도를 바로 확인해요."
+                        icon={<Soup className="h-5 w-5" />}
+                      />
                     </div>
                   </div>
+                </div>
 
-                  <div className="relative z-10">
-                    <div className="rounded-[2rem] border border-white/70 bg-gradient-to-br from-slate-900 to-slate-800 p-5 text-white shadow-[0_20px_50px_rgba(15,23,42,0.20)]">
-                      <div className="mb-4">
-                        <div className="text-sm text-orange-200">오늘의 추천 부위</div>
-                        <div className="text-3xl font-bold">{selectedCut.name}</div>
-                      </div>
-
-                      <p className="mb-5 text-sm leading-6 text-slate-300">
-                        {selectedCut.shortDescription}
-                      </p>
-
-                      <div className="grid gap-3">
-                        <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
-                          <div className="mb-2 flex items-center gap-2 text-sm text-slate-300">
-                            <Heart className="h-4 w-4 text-orange-300" />
-                            지방 느낌
-                          </div>
-                          <div className="font-semibold">
-                            {getFatLabel(selectedCut.fat)}
-                          </div>
-                        </div>
-
-                        <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
-                          <div className="mb-2 flex items-center gap-2 text-sm text-slate-300">
-                            <Beef className="h-4 w-4 text-orange-300" />
-                            풍미 느낌
-                          </div>
-                          <div className="font-semibold">
-                            {getFlavorLabel(selectedCut.flavor)}
-                          </div>
-                        </div>
-
-                        <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
-                          <div className="mb-2 flex items-center gap-2 text-sm text-slate-300">
-                            <Scale className="h-4 w-4 text-orange-300" />
-                            식감 느낌
-                          </div>
-                          <div className="font-semibold">
-                            {getTenderLabel(selectedCut.texture)}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="mt-5 flex flex-wrap gap-2">
-                        {selectedCut.cooking.map((item) => (
-                          <Badge
-                            key={item}
-                            className="rounded-full border-0 bg-orange-500/20 text-orange-100 hover:bg-orange-500/20"
-                          >
-                            {item}
-                          </Badge>
-                        ))}
-                      </div>
-
-                      <div className="mt-5">
-                        <Link href={`/cuts/${selectedCut.slug}`}>
-                          <Button variant="primary" fullWidth>
-                            자세히 보기
-                            <ChevronRight className="h-4 w-4" />
-                          </Button>
-                        </Link>
-                      </div>
+                <div className="overflow-hidden rounded-[2.25rem] border border-slate-900 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 text-white shadow-[0_24px_60px_rgba(15,23,42,0.22)]">
+                  <div className="border-b border-white/10 px-6 py-5">
+                    <div className="text-xs font-semibold uppercase tracking-[0.16em] text-orange-300">
+                      Featured
                     </div>
+                    <h2 className="mt-2 text-3xl font-black tracking-tight">오늘의 추천 부위</h2>
+                  </div>
+
+                  <div className="space-y-5 p-6">
+                    <div>
+                      <div className="text-sm text-slate-400">현재 선택된 부위</div>
+                      <div className="mt-1 text-4xl font-black tracking-tight">{selectedCut.name}</div>
+                    </div>
+
+                    <p className="text-sm leading-7 text-slate-300">{selectedCut.shortDescription}</p>
+
+                    <div className="grid gap-3">
+                      <InfoPill title="지방 느낌" value={getFatLabel(selectedCut.fat)} tone="dark" />
+                      <InfoPill title="풍미 느낌" value={getFlavorLabel(selectedCut.flavor)} tone="dark" />
+                      <InfoPill title="식감 느낌" value={getTenderLabel(selectedCut.texture)} tone="dark" />
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      {selectedCut.cooking.map((item) => (
+                        <Badge
+                          key={item}
+                          className="rounded-full border-0 bg-orange-500/20 text-orange-100 hover:bg-orange-500/20"
+                        >
+                          {item}
+                        </Badge>
+                      ))}
+                    </div>
+
+                    <Link href={`/cuts/${selectedCut.slug}`} className="block">
+                      <Button variant="primary" fullWidth className="shadow-lg shadow-orange-500/20">
+                        자세히 보기
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </div>
             </section>
 
             <section>
-              <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-                <Card className="rounded-[2rem] border-orange-100 bg-white/90 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
-                  <CardHeader>
-                    <CardTitle className="text-2xl text-slate-950">
+              <div className="grid gap-6 xl:grid-cols-[1.02fr_0.98fr]">
+                <Card className="rounded-[2rem] border-orange-100 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
+                  <CardHeader className="pb-3">
+                    <div className="text-xs font-semibold uppercase tracking-[0.16em] text-orange-500">
+                      Map
+                    </div>
+                    <CardTitle className="mt-2 text-2xl font-black tracking-tight text-slate-950">
                       부위 위치 한눈에 보기
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <MeatMap
-                      meatType={meatType}
-                      selected={selectedCut}
-                      onSelect={setSelectedCut}
-                    />
-                    <p className="mt-4 text-sm text-slate-600">
-                      지도의 부위를 누르면 정보가 바뀝니다.
+                    <MeatMap meatType={meatType} selected={selectedCut} onSelect={setSelectedCut} />
+                    <p className="mt-4 text-sm text-slate-500">
+                      지도의 부위를 누르면 오른쪽 요약 정보도 바로 바뀝니다.
                     </p>
                   </CardContent>
                 </Card>
 
-                <Card className="rounded-[2rem] border-orange-100 bg-white/90 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
-                  <CardHeader>
-                    <CardTitle className="text-2xl text-slate-950">
-                      {selectedCut.name} 요약
+                <Card className="rounded-[2rem] border-orange-100 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
+                  <CardHeader className="pb-3">
+                    <div className="text-xs font-semibold uppercase tracking-[0.16em] text-orange-500">
+                      Summary
+                    </div>
+                    <CardTitle className="mt-2 text-2xl font-black tracking-tight text-slate-950">
+                      {selectedCut.name} 빠른 요약
                     </CardTitle>
                   </CardHeader>
+
                   <CardContent className="space-y-5">
                     <div className="flex flex-wrap gap-2">
                       {selectedCut.tags.map((tag) => (
                         <Badge
                           key={tag}
                           variant="outline"
-                          className="rounded-full border-orange-200 bg-white"
+                          className="rounded-full border-orange-200 bg-white text-slate-700"
                         >
                           #{tag}
                         </Badge>
@@ -958,22 +1041,15 @@ function HomeView({
 
                     <div className="grid gap-4 sm:grid-cols-2">
                       <InfoPill title="위치" value={selectedCut.location} />
-                      <InfoPill
-                        title="대표 용도"
-                        value={selectedCut.cooking.join(", ")}
-                      />
+                      <InfoPill title="대표 용도" value={selectedCut.cooking.join(", ")} />
                     </div>
 
-                    <div className="rounded-2xl border border-orange-100 p-4">
-                      <div className="mb-2 text-sm font-semibold text-slate-800">
-                        대표 특징
-                      </div>
-                      <p className="text-sm leading-6 text-slate-600">
-                        {selectedCut.shortDescription}
-                      </p>
+                    <div className="rounded-[1.5rem] border border-orange-100 bg-orange-50/40 p-4">
+                      <div className="mb-2 text-sm font-bold text-slate-900">대표 특징</div>
+                      <p className="text-sm leading-7 text-slate-600">{selectedCut.shortDescription}</p>
                     </div>
 
-                    <Link href={`/cuts/${selectedCut.slug}`}>
+                    <Link href={`/cuts/${selectedCut.slug}`} className="block">
                       <Button variant="primary" fullWidth>
                         자세히 보기
                         <ChevronRight className="h-4 w-4" />
@@ -985,11 +1061,7 @@ function HomeView({
             </section>
 
             <section id="recommendation-section">
-              <RecommendationPanel
-                cuts={currentCuts}
-                prefs={prefs}
-                setPrefs={setPrefs}
-              />
+              <RecommendationPanel cuts={currentCuts} prefs={prefs} setPrefs={setPrefs} />
             </section>
 
             <section>
@@ -998,26 +1070,26 @@ function HomeView({
                 icon={<ArrowLeftRight className="h-5 w-5 text-orange-500" />}
               />
 
-              <div className="grid gap-6 lg:grid-cols-2">
+              <div className="grid gap-6 xl:grid-cols-2">
                 {currentComparisonPairs.map((pair) => (
                   <Card
                     key={pair.title}
-                    className="rounded-3xl border-orange-100 bg-white/90 shadow-[0_10px_30px_rgba(15,23,42,0.06)]"
+                    className="rounded-[1.75rem] border-slate-200 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.05)]"
                   >
                     <CardHeader>
-                      <CardTitle className="text-lg">{pair.title}</CardTitle>
+                      <CardTitle className="text-xl font-black tracking-tight text-slate-950">
+                        {pair.title}
+                      </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3 text-sm">
                         {pair.rows.map(([label, value]) => (
                           <div
                             key={label}
-                            className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3"
+                            className="flex items-center justify-between gap-4 rounded-[1.25rem] border border-slate-200 bg-slate-50 px-4 py-3"
                           >
                             <span className="text-slate-600">{label}</span>
-                            <span className="font-semibold text-slate-900">
-                              {value}
-                            </span>
+                            <span className="shrink-0 font-bold text-slate-900">{value}</span>
                           </div>
                         ))}
                       </div>
@@ -1030,14 +1102,10 @@ function HomeView({
             <section className="pb-14">
               <SectionTitle
                 title="부위 목록"
-                right={
-                  <div className="text-sm text-slate-500">
-                    총 {filteredCuts.length}개
-                  </div>
-                }
+                right={<div className="text-sm font-medium text-slate-500">총 {filteredCuts.length}개</div>}
               />
 
-              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
                 {filteredCuts.map((cut) => (
                   <CutCard key={cut.slug} cut={cut} />
                 ))}
@@ -1083,12 +1151,8 @@ export default function MeatSelectorSite() {
         cut.name.includes(normalized) ||
         cut.shortDescription.includes(normalized) ||
         cut.location.includes(normalized) ||
-        cut.tags.some(
-          (tag) => tag.includes(normalized) || normalized.includes(tag)
-        ) ||
-        cut.cooking.some(
-          (item) => item.includes(normalized) || normalized.includes(item)
-        )
+        cut.tags.some((tag) => tag.includes(normalized) || normalized.includes(tag)) ||
+        cut.cooking.some((item) => item.includes(normalized) || normalized.includes(item))
     );
 
     if (matchedCut) {
