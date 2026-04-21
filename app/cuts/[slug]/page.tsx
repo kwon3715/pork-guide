@@ -5,7 +5,6 @@ import {
   ChefHat,
   Sparkles,
   BadgeDollarSign,
-  ShoppingCart,
   Image as ImageIcon,
   Home,
 } from "lucide-react";
@@ -21,15 +20,15 @@ export function generateStaticParams() {
 }
 
 const priceGuideBySlug: Record<string, { priceText: string; note: string }> = {
-  "samgyeopsal": {
+  samgyeopsal: {
     priceText: "100g 기준: 약 2,000원~3,500원",
     note: "브랜드, 냉장/냉동에 따라 차이 있음",
   },
-  "moksal": {
+  moksal: {
     priceText: "100g 기준: 약 1,800원~3,200원",
     note: "두께, 원육에 따라 차이 있음",
   },
-  "apdari": {
+  apdari: {
     priceText: "100g 기준: 약 1,200원~2,300원",
     note: "용도별 손질에 따라 가격 변동",
   },
@@ -45,7 +44,7 @@ const priceGuideBySlug: Record<string, { priceText: string; note: string }> = {
     priceText: "100g 기준: 약 1,600원~3,000원",
     note: "양념 여부 영향 큼",
   },
-  "hangjeongsal": {
+  hangjeongsal: {
     priceText: "100g 기준: 약 2,800원~4,800원",
     note: "특수부위라 가격 높음",
   },
@@ -58,7 +57,7 @@ const priceGuideBySlug: Record<string, { priceText: string; note: string }> = {
     priceText: "100g 기준: 약 7,000원~15,000원",
     note: "한우/수입 차이 큼",
   },
-  "chaekkeut": {
+  chaekkeut: {
     priceText: "100g 기준: 약 8,000원~16,000원",
     note: "등급 영향 큼",
   },
@@ -67,7 +66,7 @@ const priceGuideBySlug: Record<string, { priceText: string; note: string }> = {
     note: "고급 부위",
   },
 
-  "gaseumsal": {
+  gaseumsal: {
     priceText: "100g 기준: 약 700원~1,600원",
     note: "냉동/대용량 영향 큼",
   },
@@ -75,7 +74,7 @@ const priceGuideBySlug: Record<string, { priceText: string; note: string }> = {
     priceText: "100g 기준: 약 900원~1,900원",
     note: "손질 상태 영향",
   },
-  "dakdari": {
+  dakdari: {
     priceText: "100g 기준: 약 900원~2,100원",
     note: "국산/수입 차이 있음",
   },
@@ -134,28 +133,15 @@ export default function CutDetailPage({
   return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom,_#fff7ed,_#ffffff_28%,_#f8fafc)] text-slate-900">
       <section className="mx-auto max-w-[1100px] px-4 py-8 sm:px-6 lg:px-8">
-        {/* 상단 복귀 영역 */}
+        {/* 상단 복귀 버튼 */}
         <div className="mb-6">
-          <div className="rounded-[1.75rem] border border-orange-200 bg-white/90 p-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <div className="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-orange-500">
-                  Navigation
-                </div>
-                <div className="text-sm text-slate-600">
-                  다른 부위를 다시 고르려면 메인으로 돌아가세요.
-                </div>
-              </div>
-
-              <Link href="/" className="shrink-0">
-                <Button className="rounded-full bg-orange-500 px-5 text-white shadow-sm hover:bg-orange-600">
-                  <Home className="mr-2 h-4 w-4" />
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  메인으로 돌아가기
-                </Button>
-              </Link>
-            </div>
-          </div>
+          <Link href="/" className="inline-block">
+            <Button className="h-[54px] rounded-full bg-slate-900 px-6 text-white hover:bg-slate-800">
+              <Home className="mr-2 h-4 w-4" />
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              메인으로 돌아가기
+            </Button>
+          </Link>
         </div>
 
         {/* 한줄 요약 */}
