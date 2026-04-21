@@ -7,6 +7,7 @@ import {
   BadgeDollarSign,
   ShoppingCart,
   Image as ImageIcon,
+  Home,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -133,16 +134,28 @@ export default function CutDetailPage({
   return (
     <div className="min-h-screen bg-[linear-gradient(to_bottom,_#fff7ed,_#ffffff_28%,_#f8fafc)] text-slate-900">
       <section className="mx-auto max-w-[1100px] px-4 py-8 sm:px-6 lg:px-8">
+        {/* 상단 복귀 영역 */}
         <div className="mb-6">
-          <Link href="/">
-            <Button
-              variant="outline"
-              className="rounded-full border-orange-200 text-slate-700 hover:bg-orange-50"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              메인으로 돌아가기
-            </Button>
-          </Link>
+          <div className="rounded-[1.75rem] border border-orange-200 bg-white/90 p-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)]">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-orange-500">
+                  Navigation
+                </div>
+                <div className="text-sm text-slate-600">
+                  다른 부위를 다시 고르려면 메인으로 돌아가세요.
+                </div>
+              </div>
+
+              <Link href="/" className="shrink-0">
+                <Button className="rounded-full bg-orange-500 px-5 text-white shadow-sm hover:bg-orange-600">
+                  <Home className="mr-2 h-4 w-4" />
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  메인으로 돌아가기
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
 
         {/* 한줄 요약 */}
@@ -186,7 +199,7 @@ export default function CutDetailPage({
 
           {/* 고기 특징 */}
           <Card className="rounded-[2rem] border-2 border-slate-200 bg-white shadow-[0_14px_35px_rgba(15,23,42,0.05)]">
-            <CardContent className="p-6 space-y-4">
+            <CardContent className="space-y-4 p-6">
               <div>
                 <div className="mb-2 text-sm font-semibold text-orange-600">
                   고기 특징
