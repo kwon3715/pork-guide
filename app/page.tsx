@@ -18,8 +18,12 @@ import {
   Salad,
   RotateCcw,
   CheckCircle2,
+  LayoutGrid,
+  ScanSearch,
+  Star,
+  Layers3,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import Button from "@/components/common/Button";
@@ -263,23 +267,55 @@ function getRecommendationReasons(cut: CutItem, prefs: Prefs) {
   return reasons.slice(0, 3);
 }
 
-function SectionTitle({
+function SectionBox({
+  label,
   title,
   icon,
   right,
+  children,
+  dark = false,
 }: {
+  label: string;
   title: string;
   icon?: React.ReactNode;
   right?: React.ReactNode;
+  children: React.ReactNode;
+  dark?: boolean;
 }) {
+  if (dark) {
+    return (
+      <section className="overflow-hidden rounded-[2.25rem] border border-slate-900 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 text-white shadow-[0_24px_60px_rgba(15,23,42,0.22)]">
+        <div className="flex items-start justify-between gap-4 border-b border-white/10 px-6 py-5">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-orange-300">
+              {icon}
+              {label}
+            </div>
+            <h2 className="mt-2 text-2xl font-black tracking-tight">{title}</h2>
+          </div>
+          {right}
+        </div>
+        <div className="p-6">{children}</div>
+      </section>
+    );
+  }
+
   return (
-    <div className="mb-5 flex items-center justify-between gap-4">
-      <div className="flex items-center gap-2">
-        {icon}
-        <h2 className="text-2xl font-bold tracking-tight text-slate-950">{title}</h2>
+    <section className="overflow-hidden rounded-[2.25rem] border border-slate-200 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
+      <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-6 py-5">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-orange-500">
+            {icon}
+            {label}
+          </div>
+          <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-950">
+            {title}
+          </h2>
+        </div>
+        {right}
       </div>
-      {right}
-    </div>
+      <div className="p-6">{children}</div>
+    </section>
   );
 }
 
@@ -327,78 +363,68 @@ function Sidebar({
   onChange: (type: MeatType) => void;
 }) {
   return (
-    <aside className="w-full lg:sticky lg:top-6 lg:h-fit">
-      <div className="overflow-hidden rounded-[2rem] border border-orange-100 bg-white/95 p-4 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
-        <div className="mb-4 px-2">
-          <div className="text-xs font-semibold uppercase tracking-[0.18em] text-orange-500">
-            Select
-          </div>
-          <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-950">
-            고기 선택
-          </h2>
-          <p className="mt-1 text-sm leading-6 text-slate-500">
-            종류를 먼저 고르면 아래 내용이 바로 바뀝니다.
-          </p>
-        </div>
+    <SectionBox
+      label="MEAT TYPE"
+      title="고기 종류 선택"
+      icon={<LayoutGrid className="h-4 w-4" />}
+    >
+      <div className="space-y-3">
+        {(["pork", "beef", "chicken"] as MeatType[]).map((type) => {
+          const active = meatType === type;
+          const icon =
+            type === "pork" ? (
+              <PiggyBank className="h-5 w-5" />
+            ) : type === "beef" ? (
+              <Beef className="h-5 w-5" />
+            ) : (
+              <Drumstick className="h-5 w-5" />
+            );
 
-        <div className="space-y-3">
-          {(["pork", "beef", "chicken"] as MeatType[]).map((type) => {
-            const active = meatType === type;
-            const icon =
-              type === "pork" ? (
-                <PiggyBank className="h-5 w-5" />
-              ) : type === "beef" ? (
-                <Beef className="h-5 w-5" />
-              ) : (
-                <Drumstick className="h-5 w-5" />
-              );
-
-            return (
-              <button
-                key={type}
-                type="button"
-                onClick={() => onChange(type)}
-                className={`group flex w-full items-center gap-4 rounded-[1.5rem] border px-4 py-4 text-left transition-all duration-200 ${
+          return (
+            <button
+              key={type}
+              type="button"
+              onClick={() => onChange(type)}
+              className={`group flex w-full items-center gap-4 rounded-[1.5rem] border px-4 py-4 text-left transition-all duration-200 ${
+                active
+                  ? "border-orange-500 bg-gradient-to-r from-orange-500 to-orange-400 text-white shadow-[0_14px_30px_rgba(249,115,22,0.28)]"
+                  : "border-slate-200 bg-white hover:-translate-y-0.5 hover:border-orange-200 hover:bg-orange-50/50"
+              }`}
+            >
+              <div
+                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl transition ${
                   active
-                    ? "border-orange-500 bg-gradient-to-r from-orange-500 to-orange-400 text-white shadow-[0_14px_30px_rgba(249,115,22,0.28)]"
-                    : "border-slate-200 bg-white hover:-translate-y-0.5 hover:border-orange-200 hover:bg-orange-50/50"
+                    ? "bg-white/15 text-white"
+                    : "bg-slate-100 text-slate-700 group-hover:bg-white"
                 }`}
               >
-                <div
-                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl transition ${
-                    active
-                      ? "bg-white/15 text-white"
-                      : "bg-slate-100 text-slate-700 group-hover:bg-white"
-                  }`}
-                >
-                  {icon}
-                </div>
+                {icon}
+              </div>
 
-                <div className="min-w-0">
-                  <div className={`font-bold ${active ? "text-white" : "text-slate-900"}`}>
-                    {meatMeta[type].label}
-                  </div>
-                  <div className={`mt-1 text-sm ${active ? "text-white/85" : "text-slate-500"}`}>
-                    {meatMeta[type].sideDesc}
-                  </div>
+              <div className="min-w-0">
+                <div className={`font-bold ${active ? "text-white" : "text-slate-900"}`}>
+                  {meatMeta[type].label}
                 </div>
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="mt-4 rounded-[1.5rem] border border-orange-100 bg-orange-50 p-4 text-sm leading-6 text-slate-700">
-          <div className="mb-2 flex items-center gap-2 font-semibold text-slate-900">
-            <CheckCircle2 className="h-4 w-4 text-orange-500" />
-            이 사이트 기준
-          </div>
-          위치, 특징, 대표 용도를 먼저 보고
-          <br />
-          <span className="font-semibold text-slate-900">5~10초 안에 고르기 쉽게</span>
-          정리한 구조입니다.
-        </div>
+                <div className={`mt-1 text-sm ${active ? "text-white/85" : "text-slate-500"}`}>
+                  {meatMeta[type].sideDesc}
+                </div>
+              </div>
+            </button>
+          );
+        })}
       </div>
-    </aside>
+
+      <div className="mt-4 rounded-[1.5rem] border border-orange-100 bg-orange-50 p-4 text-sm leading-6 text-slate-700">
+        <div className="mb-2 flex items-center gap-2 font-semibold text-slate-900">
+          <CheckCircle2 className="h-4 w-4 text-orange-500" />
+          이 사이트 기준
+        </div>
+        위치, 특징, 대표 용도를 먼저 보고
+        <br />
+        <span className="font-semibold text-slate-900">5~10초 안에 고르기 쉽게</span>
+        정리한 구조입니다.
+      </div>
+    </SectionBox>
   );
 }
 
@@ -667,37 +693,32 @@ function RecommendationPanel({
 
   return (
     <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-      <Card className="rounded-[2rem] border-orange-100 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <div className="text-xs font-semibold uppercase tracking-[0.16em] text-orange-500">
-                Recommend
-              </div>
-              <CardTitle className="mt-2 text-2xl font-black tracking-tight text-slate-950">
-                상황별 추천 받기
-              </CardTitle>
-            </div>
-
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              className="rounded-full"
-              onClick={() => setPrefs(defaultPrefs)}
-            >
-              <RotateCcw className="h-4 w-4" />
-              초기화
-            </Button>
-          </div>
-        </CardHeader>
-
-        <CardContent className="space-y-6">
+      <SectionBox
+        label="PREFERENCE"
+        title="상황별 추천 받기"
+        icon={<Sparkles className="h-4 w-4" />}
+        right={
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className="rounded-full"
+            onClick={() => setPrefs(defaultPrefs)}
+          >
+            <RotateCcw className="h-4 w-4" />
+            초기화
+          </Button>
+        }
+      >
+        <div className="space-y-6">
           {Object.entries(recommendationQuestions).map(([key, options]) => {
             const typedKey = key as keyof Prefs;
 
             return (
-              <div key={key} className="rounded-[1.5rem] border border-slate-200 bg-slate-50/70 p-4">
+              <div
+                key={key}
+                className="rounded-[1.5rem] border border-slate-200 bg-slate-50/70 p-4"
+              >
                 <div className="mb-3 text-sm font-bold text-slate-900">
                   {key === "cooking" && "어떻게 먹을 건가요?"}
                   {key === "texture" && "어떤 느낌을 원하나요?"}
@@ -730,21 +751,16 @@ function RecommendationPanel({
               </div>
             );
           })}
-        </CardContent>
-      </Card>
-
-      <div className="overflow-hidden rounded-[2rem] border border-slate-900 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 text-white shadow-[0_20px_55px_rgba(15,23,42,0.24)]">
-        <div className="border-b border-white/10 px-6 py-5">
-          <div className="text-xs font-semibold uppercase tracking-[0.16em] text-orange-300">
-            Result
-          </div>
-          <h3 className="mt-2 text-2xl font-black tracking-tight">추천 결과</h3>
-          <p className="mt-1 text-sm text-slate-300">
-            지금 선택 기준에 맞춰 보기 쉬운 순서로 정리했습니다.
-          </p>
         </div>
+      </SectionBox>
 
-        <div className="space-y-4 p-6">
+      <SectionBox
+        label="RESULT"
+        title="추천 결과"
+        icon={<Star className="h-4 w-4" />}
+        dark
+      >
+        <div className="space-y-4">
           {results.map((cut, idx) => (
             <div
               key={cut.slug}
@@ -794,7 +810,7 @@ function RecommendationPanel({
             </div>
           ))}
         </div>
-      </div>
+      </SectionBox>
     </div>
   );
 }
@@ -856,232 +872,206 @@ function HomeView({
           <Sidebar meatType={meatType} onChange={setMeatType} />
 
           <div className="space-y-8">
-            <section>
-              <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
-                <div className="relative overflow-hidden rounded-[2.25rem] border border-orange-100 bg-white p-6 shadow-[0_22px_60px_rgba(15,23,42,0.08)] sm:p-8 lg:p-10">
-                  <div className="pointer-events-none absolute -right-10 -top-10 h-44 w-44 rounded-full bg-orange-100 blur-3xl" />
-                  <div className="pointer-events-none absolute bottom-0 left-0 h-36 w-36 rounded-full bg-amber-50 blur-3xl" />
+            <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">
+              <SectionBox
+                label="START HERE"
+                title={`${meta.label} 바로 고르기`}
+                icon={<ScanSearch className="h-4 w-4" />}
+              >
+                <div>
+                  <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-4 py-2 text-sm font-semibold text-orange-700">
+                    <Sparkles className="h-4 w-4" />
+                    {meta.hero}
+                  </div>
 
-                  <div className="relative z-10">
-                    <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-200 bg-orange-50 px-4 py-2 text-sm font-semibold text-orange-700">
-                      <Sparkles className="h-4 w-4" />
-                      {meta.hero}
+                  <p className="max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
+                    {meta.heroDesc}
+                  </p>
+
+                  <div className="mt-6 flex flex-wrap gap-2">
+                    {meta.quickTags.map((tag) => (
+                      <div
+                        key={tag}
+                        className="rounded-full border border-orange-200 bg-white px-3 py-2 text-sm font-medium text-slate-700"
+                      >
+                        #{tag}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-8 rounded-[1.75rem] border border-slate-200 bg-slate-50/80 p-4 sm:p-5">
+                    <div className="mb-3 text-sm font-bold text-slate-900">
+                      부위를 직접 찾거나, 빠른 선택으로 추천 결과로 이동할 수 있어요.
                     </div>
 
-                    <h1 className="text-4xl font-black tracking-tight text-slate-950 sm:text-5xl xl:text-6xl">
-                      {meta.label}
-                      <span className="block bg-gradient-to-r from-slate-950 to-orange-500 bg-clip-text text-transparent">
-                        바로 고르는 사이트
-                      </span>
-                    </h1>
-
-                    <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
-                      {meta.heroDesc}
-                    </p>
-
-                    <div className="mt-6 flex flex-wrap gap-2">
-                      {meta.quickTags.map((tag) => (
-                        <div
-                          key={tag}
-                          className="rounded-full border border-orange-200 bg-white px-3 py-2 text-sm font-medium text-slate-700"
-                        >
-                          #{tag}
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="mt-8 rounded-[1.75rem] border border-slate-200 bg-slate-50/80 p-4 sm:p-5">
-                      <div className="mb-3 text-sm font-bold text-slate-900">
-                        부위를 바로 찾거나, 빠른 선택으로 추천으로 이동할 수 있어요.
+                    <div className="flex flex-col gap-3 sm:flex-row">
+                      <div className="relative flex-1">
+                        <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                        <Input
+                          value={query}
+                          onChange={(e) => setQuery(e.target.value)}
+                          placeholder={meta.placeholder}
+                          className="h-13 rounded-2xl border-slate-200 bg-white pl-11 text-sm shadow-sm focus-visible:ring-orange-300"
+                        />
                       </div>
 
-                      <div className="flex flex-col gap-3 sm:flex-row">
-                        <div className="relative flex-1">
-                          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                          <Input
-                            value={query}
-                            onChange={(e) => setQuery(e.target.value)}
-                            placeholder={meta.placeholder}
-                            className="h-13 rounded-2xl border-slate-200 bg-white pl-11 text-sm shadow-sm focus-visible:ring-orange-300"
-                          />
-                        </div>
-
-                        <Button
-                          variant="primary"
-                          className="h-13 px-6 shadow-lg shadow-orange-200"
-                          onClick={() => handleSearch(query)}
-                        >
-                          부위 찾기
-                        </Button>
-                      </div>
-
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        <Button type="button" variant="chip" onClick={() => applyQuickKeyword("grill")}>
-                          <Flame className="h-4 w-4" />
-                          구이 위주
-                        </Button>
-                        <Button type="button" variant="chip" onClick={() => applyQuickKeyword("stew")}>
-                          <Soup className="h-4 w-4" />
-                          국물·찜 위주
-                        </Button>
-                        <Button type="button" variant="chip" onClick={() => applyQuickKeyword("light")}>
-                          <Salad className="h-4 w-4" />
-                          담백한 쪽
-                        </Button>
-                      </div>
+                      <Button
+                        variant="primary"
+                        className="h-13 px-6 shadow-lg shadow-orange-200"
+                        onClick={() => handleSearch(query)}
+                      >
+                        부위 찾기
+                      </Button>
                     </div>
 
-                    <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                      <HeroQuickCard
-                        title="부위 위치"
-                        desc="어디 부위인지 먼저 보고 고를 수 있어요."
-                        icon={<MapPinned className="h-5 w-5" />}
-                      />
-                      <HeroQuickCard
-                        title="핵심 특징"
-                        desc="지방감, 풍미, 식감 위주로 짧게 정리했어요."
-                        icon={<Heart className="h-5 w-5" />}
-                      />
-                      <HeroQuickCard
-                        title="대표 용도"
-                        desc="구이, 국물, 튀김처럼 용도를 바로 확인해요."
-                        icon={<Soup className="h-5 w-5" />}
-                      />
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <Button type="button" variant="chip" onClick={() => applyQuickKeyword("grill")}>
+                        <Flame className="h-4 w-4" />
+                        구이 위주
+                      </Button>
+                      <Button type="button" variant="chip" onClick={() => applyQuickKeyword("stew")}>
+                        <Soup className="h-4 w-4" />
+                        국물·찜 위주
+                      </Button>
+                      <Button type="button" variant="chip" onClick={() => applyQuickKeyword("light")}>
+                        <Salad className="h-4 w-4" />
+                        담백한 쪽
+                      </Button>
                     </div>
+                  </div>
+
+                  <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                    <HeroQuickCard
+                      title="부위 위치"
+                      desc="어디 부위인지 먼저 보고 고를 수 있어요."
+                      icon={<MapPinned className="h-5 w-5" />}
+                    />
+                    <HeroQuickCard
+                      title="핵심 특징"
+                      desc="지방감, 풍미, 식감 위주로 짧게 정리했어요."
+                      icon={<Heart className="h-5 w-5" />}
+                    />
+                    <HeroQuickCard
+                      title="대표 용도"
+                      desc="구이, 국물, 튀김처럼 용도를 바로 확인해요."
+                      icon={<Soup className="h-5 w-5" />}
+                    />
                   </div>
                 </div>
+              </SectionBox>
 
-                <div className="overflow-hidden rounded-[2.25rem] border border-slate-900 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 text-white shadow-[0_24px_60px_rgba(15,23,42,0.22)]">
-                  <div className="border-b border-white/10 px-6 py-5">
-                    <div className="text-xs font-semibold uppercase tracking-[0.16em] text-orange-300">
-                      Featured
-                    </div>
-                    <h2 className="mt-2 text-3xl font-black tracking-tight">오늘의 추천 부위</h2>
+              <SectionBox
+                label="FEATURED CUT"
+                title="오늘의 추천 부위"
+                icon={<Star className="h-4 w-4" />}
+                dark
+              >
+                <div className="space-y-5">
+                  <div>
+                    <div className="text-sm text-slate-400">현재 선택된 부위</div>
+                    <div className="mt-1 text-4xl font-black tracking-tight">{selectedCut.name}</div>
                   </div>
 
-                  <div className="space-y-5 p-6">
-                    <div>
-                      <div className="text-sm text-slate-400">현재 선택된 부위</div>
-                      <div className="mt-1 text-4xl font-black tracking-tight">{selectedCut.name}</div>
-                    </div>
+                  <p className="text-sm leading-7 text-slate-300">{selectedCut.shortDescription}</p>
 
-                    <p className="text-sm leading-7 text-slate-300">{selectedCut.shortDescription}</p>
-
-                    <div className="grid gap-3">
-                      <InfoPill title="지방 느낌" value={getFatLabel(selectedCut.fat)} tone="dark" />
-                      <InfoPill title="풍미 느낌" value={getFlavorLabel(selectedCut.flavor)} tone="dark" />
-                      <InfoPill title="식감 느낌" value={getTenderLabel(selectedCut.texture)} tone="dark" />
-                    </div>
-
-                    <div className="flex flex-wrap gap-2">
-                      {selectedCut.cooking.map((item) => (
-                        <Badge
-                          key={item}
-                          className="rounded-full border-0 bg-orange-500/20 text-orange-100 hover:bg-orange-500/20"
-                        >
-                          {item}
-                        </Badge>
-                      ))}
-                    </div>
-
-                    <Link href={`/cuts/${selectedCut.slug}`} className="block">
-                      <Button variant="primary" fullWidth className="shadow-lg shadow-orange-500/20">
-                        자세히 보기
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                    </Link>
+                  <div className="grid gap-3">
+                    <InfoPill title="지방 느낌" value={getFatLabel(selectedCut.fat)} tone="dark" />
+                    <InfoPill title="풍미 느낌" value={getFlavorLabel(selectedCut.flavor)} tone="dark" />
+                    <InfoPill title="식감 느낌" value={getTenderLabel(selectedCut.texture)} tone="dark" />
                   </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {selectedCut.cooking.map((item) => (
+                      <Badge
+                        key={item}
+                        className="rounded-full border-0 bg-orange-500/20 text-orange-100 hover:bg-orange-500/20"
+                      >
+                        {item}
+                      </Badge>
+                    ))}
+                  </div>
+
+                  <Link href={`/cuts/${selectedCut.slug}`} className="block">
+                    <Button variant="primary" fullWidth className="shadow-lg shadow-orange-500/20">
+                      자세히 보기
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </Link>
                 </div>
-              </div>
-            </section>
+              </SectionBox>
+            </div>
 
-            <section>
-              <div className="grid gap-6 xl:grid-cols-[1.02fr_0.98fr]">
-                <Card className="rounded-[2rem] border-orange-100 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
-                  <CardHeader className="pb-3">
-                    <div className="text-xs font-semibold uppercase tracking-[0.16em] text-orange-500">
-                      Map
-                    </div>
-                    <CardTitle className="mt-2 text-2xl font-black tracking-tight text-slate-950">
-                      부위 위치 한눈에 보기
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <MeatMap meatType={meatType} selected={selectedCut} onSelect={setSelectedCut} />
-                    <p className="mt-4 text-sm text-slate-500">
-                      지도의 부위를 누르면 오른쪽 요약 정보도 바로 바뀝니다.
-                    </p>
-                  </CardContent>
-                </Card>
+            <div className="grid gap-6 xl:grid-cols-[1.02fr_0.98fr]">
+              <SectionBox
+                label="CUT MAP"
+                title="부위 위치 한눈에 보기"
+                icon={<MapPinned className="h-4 w-4" />}
+              >
+                <MeatMap meatType={meatType} selected={selectedCut} onSelect={setSelectedCut} />
+                <p className="mt-4 text-sm text-slate-500">
+                  지도의 부위를 누르면 오른쪽 요약 정보도 바로 바뀝니다.
+                </p>
+              </SectionBox>
 
-                <Card className="rounded-[2rem] border-orange-100 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.06)]">
-                  <CardHeader className="pb-3">
-                    <div className="text-xs font-semibold uppercase tracking-[0.16em] text-orange-500">
-                      Summary
-                    </div>
-                    <CardTitle className="mt-2 text-2xl font-black tracking-tight text-slate-950">
-                      {selectedCut.name} 빠른 요약
-                    </CardTitle>
-                  </CardHeader>
+              <SectionBox
+                label="QUICK SUMMARY"
+                title={`${selectedCut.name} 빠른 요약`}
+                icon={<Layers3 className="h-4 w-4" />}
+              >
+                <div className="space-y-5">
+                  <div className="flex flex-wrap gap-2">
+                    {selectedCut.tags.map((tag) => (
+                      <Badge
+                        key={tag}
+                        variant="outline"
+                        className="rounded-full border-orange-200 bg-white text-slate-700"
+                      >
+                        #{tag}
+                      </Badge>
+                    ))}
+                  </div>
 
-                  <CardContent className="space-y-5">
-                    <div className="flex flex-wrap gap-2">
-                      {selectedCut.tags.map((tag) => (
-                        <Badge
-                          key={tag}
-                          variant="outline"
-                          className="rounded-full border-orange-200 bg-white text-slate-700"
-                        >
-                          #{tag}
-                        </Badge>
-                      ))}
-                    </div>
+                  <ProfileCard cut={selectedCut} />
 
-                    <ProfileCard cut={selectedCut} />
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <InfoPill title="위치" value={selectedCut.location} />
+                    <InfoPill title="대표 용도" value={selectedCut.cooking.join(", ")} />
+                  </div>
 
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <InfoPill title="위치" value={selectedCut.location} />
-                      <InfoPill title="대표 용도" value={selectedCut.cooking.join(", ")} />
-                    </div>
+                  <div className="rounded-[1.5rem] border border-orange-100 bg-orange-50/40 p-4">
+                    <div className="mb-2 text-sm font-bold text-slate-900">대표 특징</div>
+                    <p className="text-sm leading-7 text-slate-600">{selectedCut.shortDescription}</p>
+                  </div>
 
-                    <div className="rounded-[1.5rem] border border-orange-100 bg-orange-50/40 p-4">
-                      <div className="mb-2 text-sm font-bold text-slate-900">대표 특징</div>
-                      <p className="text-sm leading-7 text-slate-600">{selectedCut.shortDescription}</p>
-                    </div>
-
-                    <Link href={`/cuts/${selectedCut.slug}`} className="block">
-                      <Button variant="primary" fullWidth>
-                        자세히 보기
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
-              </div>
-            </section>
+                  <Link href={`/cuts/${selectedCut.slug}`} className="block">
+                    <Button variant="primary" fullWidth>
+                      자세히 보기
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                </div>
+              </SectionBox>
+            </div>
 
             <section id="recommendation-section">
               <RecommendationPanel cuts={currentCuts} prefs={prefs} setPrefs={setPrefs} />
             </section>
 
-            <section>
-              <SectionTitle
-                title="비슷한 부위 비교"
-                icon={<ArrowLeftRight className="h-5 w-5 text-orange-500" />}
-              />
-
+            <SectionBox
+              label="COMPARE"
+              title="비슷한 부위 비교"
+              icon={<ArrowLeftRight className="h-4 w-4" />}
+            >
               <div className="grid gap-6 xl:grid-cols-2">
                 {currentComparisonPairs.map((pair) => (
                   <Card
                     key={pair.title}
                     className="rounded-[1.75rem] border-slate-200 bg-white shadow-[0_10px_30px_rgba(15,23,42,0.05)]"
                   >
-                    <CardHeader>
-                      <CardTitle className="text-xl font-black tracking-tight text-slate-950">
+                    <CardContent className="p-5">
+                      <div className="mb-4 text-xl font-black tracking-tight text-slate-950">
                         {pair.title}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
+                      </div>
                       <div className="space-y-3 text-sm">
                         {pair.rows.map(([label, value]) => (
                           <div
@@ -1097,20 +1087,20 @@ function HomeView({
                   </Card>
                 ))}
               </div>
-            </section>
+            </SectionBox>
 
-            <section className="pb-14">
-              <SectionTitle
-                title="부위 목록"
-                right={<div className="text-sm font-medium text-slate-500">총 {filteredCuts.length}개</div>}
-              />
-
+            <SectionBox
+              label="CUT LIST"
+              title="부위 목록"
+              icon={<LayoutGrid className="h-4 w-4" />}
+              right={<div className="text-sm font-medium text-slate-500">총 {filteredCuts.length}개</div>}
+            >
               <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
                 {filteredCuts.map((cut) => (
                   <CutCard key={cut.slug} cut={cut} />
                 ))}
               </div>
-            </section>
+            </SectionBox>
           </div>
         </div>
       </section>
