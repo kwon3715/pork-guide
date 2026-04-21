@@ -20,9 +20,9 @@ import {
   List,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import Button from "@/components/common/Button";
 import { allCuts, type CutItem } from "@/data/porkCuts";
 
 type MeatType = "pork" | "beef" | "chicken";
@@ -449,10 +449,11 @@ function PorkMap({
             <Button
               key={item.id}
               type="button"
-              variant={active ? "primary" : "secondary"}
-              size="sm"
+              variant={active ? "default" : "outline"}
               className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full px-3 py-1 text-xs font-bold sm:text-sm ${
-                active ? "ring-4 ring-orange-200" : ""
+                active
+                  ? "bg-orange-500 text-white ring-4 ring-orange-200 hover:bg-orange-500"
+                  : "border-slate-300 bg-white text-slate-900 hover:border-orange-400 hover:text-orange-600"
               }`}
               style={{ left: item.left, top: item.top }}
               onClick={() => {
@@ -508,10 +509,11 @@ function BeefMap({
             <Button
               key={item.id}
               type="button"
-              variant={active ? "primary" : "secondary"}
-              size="sm"
+              variant={active ? "default" : "outline"}
               className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full px-3 py-1 text-xs font-bold sm:text-sm ${
-                active ? "ring-4 ring-orange-200" : ""
+                active
+                  ? "bg-orange-500 text-white ring-4 ring-orange-200 hover:bg-orange-500"
+                  : "border-slate-300 bg-white text-slate-900 hover:border-orange-400 hover:text-orange-600"
               }`}
               style={{ left: item.left, top: item.top }}
               onClick={() => {
@@ -563,10 +565,11 @@ function ChickenMap({
             <Button
               key={item.id}
               type="button"
-              variant={active ? "primary" : "secondary"}
-              size="sm"
+              variant={active ? "default" : "outline"}
               className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full px-3 py-1 text-xs font-bold sm:text-sm ${
-                active ? "ring-4 ring-orange-200" : ""
+                active
+                  ? "bg-orange-500 text-white ring-4 ring-orange-200 hover:bg-orange-500"
+                  : "border-slate-300 bg-white text-slate-900 hover:border-orange-400 hover:text-orange-600"
               }`}
               style={{ left: item.left, top: item.top }}
               onClick={() => {
@@ -620,9 +623,9 @@ function CutCard({ cut }: { cut: CutItem }) {
         </div>
 
         <Link href={`/cuts/${cut.slug}`} className="block">
-          <Button variant="primary" fullWidth>
+          <Button className="w-full rounded-2xl bg-orange-500 text-white hover:bg-orange-600">
             자세히 보기
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="ml-1 h-4 w-4" />
           </Button>
         </Link>
       </CardContent>
@@ -659,12 +662,11 @@ function RecommendationPanel({
         right={
           <Button
             type="button"
-            variant="secondary"
-            size="sm"
-            className="rounded-full"
+            variant="outline"
+            className="rounded-full border-orange-200 px-4 py-2 text-sm font-medium text-orange-600 hover:border-orange-300 hover:bg-orange-50"
             onClick={() => setPrefs(defaultPrefs)}
           >
-            <RotateCcw className="h-4 w-4" />
+            <RotateCcw className="mr-2 h-4 w-4" />
             초기화
           </Button>
         }
@@ -687,8 +689,12 @@ function RecommendationPanel({
                       <Button
                         key={option}
                         type="button"
-                        variant="chip"
-                        active={active}
+                        variant={active ? "default" : "outline"}
+                        className={`rounded-full ${
+                          active
+                            ? "bg-orange-500 text-white hover:bg-orange-600"
+                            : "border-orange-200 bg-white text-slate-700 hover:border-orange-300 hover:bg-orange-50"
+                        }`}
                         onClick={() =>
                           setPrefs((prev) => ({
                             ...prev,
@@ -753,7 +759,7 @@ function RecommendationPanel({
               )}
 
               <Link href={`/cuts/${cut.slug}`} className="inline-block">
-                <Button variant="primary" size="sm" className="rounded-full">
+                <Button className="rounded-full bg-orange-500 text-white hover:bg-orange-600">
                   상세페이지 보기
                 </Button>
               </Link>
@@ -834,8 +840,7 @@ function HomeView({
                       />
                     </div>
                     <Button
-                      variant="primary"
-                      className="h-12 px-6 shadow-lg shadow-orange-200"
+                      className="h-12 rounded-2xl bg-orange-500 px-6 text-white shadow-lg shadow-orange-200 hover:bg-orange-600"
                       onClick={() => handleSearch(query)}
                     >
                       부위 찾기
@@ -843,16 +848,31 @@ function HomeView({
                   </div>
 
                   <div className="mt-4 flex flex-wrap gap-2">
-                    <Button type="button" variant="chip" onClick={() => applyQuickKeyword("grill")}>
-                      <Flame className="h-4 w-4" />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="rounded-full border-orange-200 bg-white text-orange-600 hover:border-orange-300 hover:bg-orange-50"
+                      onClick={() => applyQuickKeyword("grill")}
+                    >
+                      <Flame className="mr-2 h-4 w-4" />
                       구이 위주
                     </Button>
-                    <Button type="button" variant="chip" onClick={() => applyQuickKeyword("stew")}>
-                      <Flame className="h-4 w-4" />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="rounded-full border-orange-200 bg-white text-orange-600 hover:border-orange-300 hover:bg-orange-50"
+                      onClick={() => applyQuickKeyword("stew")}
+                    >
+                      <Flame className="mr-2 h-4 w-4" />
                       국물·찜 위주
                     </Button>
-                    <Button type="button" variant="chip" onClick={() => applyQuickKeyword("light")}>
-                      <Flame className="h-4 w-4" />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="rounded-full border-orange-200 bg-white text-orange-600 hover:border-orange-300 hover:bg-orange-50"
+                      onClick={() => applyQuickKeyword("light")}
+                    >
+                      <Flame className="mr-2 h-4 w-4" />
                       담백한 쪽
                     </Button>
                   </div>
@@ -893,9 +913,9 @@ function HomeView({
 
                 <div className="mt-5">
                   <Link href={`/cuts/${selectedCut.slug}`}>
-                    <Button variant="primary" fullWidth>
+                    <Button className="w-full rounded-2xl bg-orange-500 text-white hover:bg-orange-600">
                       자세히 보기
-                      <ChevronRight className="h-4 w-4" />
+                      <ChevronRight className="ml-1 h-4 w-4" />
                     </Button>
                   </Link>
                 </div>
@@ -941,9 +961,9 @@ function HomeView({
                   </div>
 
                   <Link href={`/cuts/${selectedCut.slug}`}>
-                    <Button variant="primary" fullWidth>
+                    <Button className="w-full rounded-2xl bg-orange-500 text-white hover:bg-orange-600">
                       자세히 보기
-                      <ChevronRight className="h-4 w-4" />
+                      <ChevronRight className="ml-1 h-4 w-4" />
                     </Button>
                   </Link>
                 </div>
