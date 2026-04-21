@@ -12,11 +12,12 @@ import {
   Heart,
   ChevronRight,
   ArrowLeftRight,
+  RotateCcw,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import Button from "@/components/common/Button";
 import { allCuts, type CutItem } from "@/data/porkCuts";
 
 type MeatType = "pork" | "beef" | "chicken";
@@ -248,9 +249,29 @@ function getRecommendationReasons(cut: CutItem, prefs: Prefs) {
 
 function InfoPill({ title, value }: { title: string; value: string }) {
   return (
-    <div className="rounded-2xl bg-slate-50 p-4">
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
       <div className="text-sm text-slate-500">{title}</div>
       <div className="mt-1 font-semibold text-slate-900">{value}</div>
+    </div>
+  );
+}
+
+function SectionTitle({
+  title,
+  icon,
+  right,
+}: {
+  title: string;
+  icon?: React.ReactNode;
+  right?: React.ReactNode;
+}) {
+  return (
+    <div className="mb-5 flex items-center justify-between gap-4">
+      <div className="flex items-center gap-2">
+        {icon}
+        <h2 className="text-2xl font-bold text-slate-950">{title}</h2>
+      </div>
+      {right}
     </div>
   );
 }
@@ -291,41 +312,49 @@ function Sidebar({
               );
 
             return (
-              <button
+              <Button
                 key={type}
                 type="button"
+                variant="secondary"
+                active={active}
+                fullWidth
+                className="min-h-[76px] justify-start rounded-2xl px-4 py-4 text-left"
                 onClick={() => onChange(type)}
-                className={`flex w-full items-center gap-3 rounded-2xl border px-4 py-4 text-left transition ${
-                  active
-                    ? "border-orange-200 bg-orange-50"
-                    : "border-slate-200 bg-white hover:border-orange-200 hover:bg-orange-50/50"
-                }`}
               >
                 <div
-                  className={`rounded-2xl p-3 ${
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${
                     active
-                      ? "bg-orange-500 text-white"
+                      ? "bg-white/20 text-white"
                       : "bg-slate-100 text-slate-700"
                   }`}
                 >
                   {icon}
                 </div>
-                <div>
-                  <div className="font-semibold text-slate-900">
-                    {meatMeta[type].label}
-                  </div>
-                  <div className="text-sm text-slate-500">
+                <div className="min-w-0">
+                  <div className="font-semibold">{meatMeta[type].label}</div>
+                  <div
+                    className={`text-sm ${
+                      active ? "text-white/90" : "text-slate-500"
+                    }`}
+                  >
                     {meatMeta[type].sideDesc}
                   </div>
                 </div>
-              </button>
+              </Button>
             );
           })}
 
           <div className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm leading-6 text-slate-600">
-            이 버전은 <span className="font-semibold text-slate-900">정확한 숫자처럼 보이는 표현</span>을 줄이고,
+            이 버전은{" "}
+            <span className="font-semibold text-slate-900">
+              정확한 숫자처럼 보이는 표현
+            </span>
+            을 줄이고,
             <br />
-            <span className="font-semibold text-slate-900">위치 · 특징 · 대표 용도</span> 중심으로 보수적으로 정리했습니다.
+            <span className="font-semibold text-slate-900">
+              위치 · 특징 · 대표 용도
+            </span>{" "}
+            중심으로 보수적으로 정리했습니다.
           </div>
         </CardContent>
       </Card>
@@ -369,22 +398,22 @@ function PorkMap({
         {items.map((item) => {
           const active = selected.slug === item.id;
           return (
-            <button
+            <Button
               key={item.id}
               type="button"
+              variant={active ? "primary" : "secondary"}
+              size="sm"
+              className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full px-3 py-1 text-xs font-bold sm:text-sm ${
+                active ? "ring-4 ring-orange-200" : ""
+              }`}
+              style={{ left: item.left, top: item.top }}
               onClick={() => {
                 const cut = allCuts.find((c) => c.slug === item.id);
                 if (cut) onSelect(cut);
               }}
-              className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full px-3 py-1 text-xs font-bold shadow-sm transition sm:text-sm ${
-                active
-                  ? "bg-orange-500 text-white ring-4 ring-orange-200"
-                  : "border border-slate-300 bg-white text-slate-900 hover:border-orange-400 hover:text-orange-600"
-              }`}
-              style={{ left: item.left, top: item.top }}
             >
               {item.label}
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -428,22 +457,22 @@ function BeefMap({
         {items.map((item) => {
           const active = selected.slug === item.id;
           return (
-            <button
+            <Button
               key={item.id}
               type="button"
+              variant={active ? "primary" : "secondary"}
+              size="sm"
+              className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full px-3 py-1 text-xs font-bold sm:text-sm ${
+                active ? "ring-4 ring-orange-200" : ""
+              }`}
+              style={{ left: item.left, top: item.top }}
               onClick={() => {
                 const cut = allCuts.find((c) => c.slug === item.id);
                 if (cut) onSelect(cut);
               }}
-              className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full px-3 py-1 text-xs font-bold shadow-sm transition sm:text-sm ${
-                active
-                  ? "bg-orange-500 text-white ring-4 ring-orange-200"
-                  : "border border-slate-300 bg-white text-slate-900 hover:border-orange-400 hover:text-orange-600"
-              }`}
-              style={{ left: item.left, top: item.top }}
             >
               {item.label}
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -476,29 +505,43 @@ function ChickenMap({
           <circle cx="248" cy="118" r="8" fill="#94a3b8" />
           <path d="M185 130 L150 120 L185 145 Z" fill="#fbbf24" />
           <ellipse cx="195" cy="190" rx="55" ry="22" fill="#d1d5db" />
-          <ellipse cx="255" cy="255" rx="22" ry="58" fill="#d1d5db" transform="rotate(15 255 255)" />
-          <ellipse cx="360" cy="270" rx="22" ry="64" fill="#d1d5db" transform="rotate(-10 360 270)" />
+          <ellipse
+            cx="255"
+            cy="255"
+            rx="22"
+            ry="58"
+            fill="#d1d5db"
+            transform="rotate(15 255 255)"
+          />
+          <ellipse
+            cx="360"
+            cy="270"
+            rx="22"
+            ry="64"
+            fill="#d1d5db"
+            transform="rotate(-10 360 270)"
+          />
         </svg>
 
         {items.map((item) => {
           const active = selected.slug === item.id;
           return (
-            <button
+            <Button
               key={item.id}
               type="button"
+              variant={active ? "primary" : "secondary"}
+              size="sm"
+              className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full px-3 py-1 text-xs font-bold sm:text-sm ${
+                active ? "ring-4 ring-orange-200" : ""
+              }`}
+              style={{ left: item.left, top: item.top }}
               onClick={() => {
                 const cut = allCuts.find((c) => c.slug === item.id);
                 if (cut) onSelect(cut);
               }}
-              className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full px-3 py-1 text-xs font-bold shadow-sm transition sm:text-sm ${
-                active
-                  ? "bg-orange-500 text-white ring-4 ring-orange-200"
-                  : "border border-slate-300 bg-white text-slate-900 hover:border-orange-400 hover:text-orange-600"
-              }`}
-              style={{ left: item.left, top: item.top }}
             >
               {item.label}
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -515,8 +558,14 @@ function MeatMap({
   selected: CutItem;
   onSelect: (cut: CutItem) => void;
 }) {
-  if (meatType === "pork") return <PorkMap selected={selected} onSelect={onSelect} />;
-  if (meatType === "beef") return <BeefMap selected={selected} onSelect={onSelect} />;
+  if (meatType === "pork") {
+    return <PorkMap selected={selected} onSelect={onSelect} />;
+  }
+
+  if (meatType === "beef") {
+    return <BeefMap selected={selected} onSelect={onSelect} />;
+  }
+
   return <ChickenMap selected={selected} onSelect={onSelect} />;
 }
 
@@ -531,7 +580,11 @@ function CutCard({ cut }: { cut: CutItem }) {
 
         <div className="mb-4 flex flex-wrap gap-2">
           {cut.tags.map((tag) => (
-            <Badge key={tag} variant="outline" className="rounded-full border-orange-200">
+            <Badge
+              key={tag}
+              variant="outline"
+              className="rounded-full border-orange-200 bg-white"
+            >
               #{tag}
             </Badge>
           ))}
@@ -543,9 +596,9 @@ function CutCard({ cut }: { cut: CutItem }) {
         </div>
 
         <Link href={`/cuts/${cut.slug}`} className="block">
-          <Button className="w-full rounded-2xl bg-orange-500 text-white hover:bg-orange-600">
+          <Button variant="primary" fullWidth>
             자세히 보기
-            <ChevronRight className="ml-1 h-4 w-4" />
+            <ChevronRight className="h-4 w-4" />
           </Button>
         </Link>
       </CardContent>
@@ -581,10 +634,12 @@ function RecommendationPanel({
             <CardTitle className="text-xl">상황별 추천 받기</CardTitle>
             <Button
               type="button"
-              variant="outline"
-              className="rounded-full border-orange-200 px-4 py-2 text-sm font-medium text-orange-600 hover:border-orange-300 hover:bg-orange-50"
+              variant="secondary"
+              size="sm"
+              className="rounded-full"
               onClick={() => setPrefs(defaultPrefs)}
             >
+              <RotateCcw className="h-4 w-4" />
               초기화
             </Button>
           </div>
@@ -592,6 +647,7 @@ function RecommendationPanel({
         <CardContent className="space-y-6">
           {Object.entries(recommendationQuestions).map(([key, options]) => {
             const typedKey = key as keyof Prefs;
+
             return (
               <div key={key}>
                 <div className="mb-3 text-sm font-semibold text-slate-800">
@@ -600,15 +656,17 @@ function RecommendationPanel({
                   {key === "fat" && "지방감은 어느 쪽이 좋나요?"}
                   {key === "budget" && "예산 기준은 어떻게 보나요?"}
                 </div>
+
                 <div className="flex flex-wrap gap-2">
                   {options.map((option) => {
                     const active = prefs[typedKey] === option;
+
                     return (
                       <Button
                         key={option}
                         type="button"
-                        variant={active ? "default" : "outline"}
-                        className={`rounded-full ${active ? "bg-orange-500 hover:bg-orange-600" : "border-orange-200"}`}
+                        variant="chip"
+                        active={active}
                         onClick={() =>
                           setPrefs((prev) => ({
                             ...prev,
@@ -634,21 +692,25 @@ function RecommendationPanel({
         <CardContent className="space-y-4">
           {results.map((cut, idx) => (
             <div key={cut.slug} className="rounded-2xl border border-orange-100 p-4">
-              <div className="mb-2 flex items-center justify-between">
+              <div className="mb-2 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <Badge className="rounded-full bg-orange-500 text-white hover:bg-orange-500">
                     TOP {idx + 1}
                   </Badge>
                   <div className="font-bold text-slate-900">{cut.name}</div>
                 </div>
-                <div className="text-sm font-semibold text-slate-600">추천 참고용</div>
+                <div className="text-sm font-semibold text-slate-500">추천 참고용</div>
               </div>
 
               <p className="mb-3 text-sm text-slate-600">{cut.shortDescription}</p>
 
               <div className="mb-3 flex flex-wrap gap-2">
                 {cut.cooking.map((item) => (
-                  <Badge key={item} variant="outline" className="rounded-full border-orange-200">
+                  <Badge
+                    key={item}
+                    variant="outline"
+                    className="rounded-full border-orange-200 bg-white"
+                  >
                     {item}
                   </Badge>
                 ))}
@@ -668,7 +730,7 @@ function RecommendationPanel({
               )}
 
               <Link href={`/cuts/${cut.slug}`} className="inline-block">
-                <Button className="rounded-full bg-orange-500 text-white hover:bg-orange-600">
+                <Button variant="primary" size="sm" className="rounded-full">
                   상세페이지 보기
                 </Button>
               </Link>
@@ -737,30 +799,28 @@ function HomeView({
                     </h1>
 
                     <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
-                      정확한 수치처럼 보이는 표현은 줄이고, 부위의 위치·대표 용도·느낌을 보수적으로 정리한 안내형 버전입니다.
+                      정확한 수치처럼 보이는 표현은 줄이고, 부위의 위치·대표 용도·느낌을
+                      보수적으로 정리한 안내형 버전입니다.
                     </p>
 
                     <div className="mt-6 flex flex-wrap gap-3">
                       <Button
                         type="button"
-                        variant="outline"
-                        className="rounded-full border-orange-200 text-orange-600"
+                        variant="chip"
                         onClick={() => applyQuickKeyword("grill")}
                       >
                         🔥 구이 위주
                       </Button>
                       <Button
                         type="button"
-                        variant="outline"
-                        className="rounded-full border-orange-200 text-orange-600"
+                        variant="chip"
                         onClick={() => applyQuickKeyword("stew")}
                       >
                         🍲 국물·찜 위주
                       </Button>
                       <Button
                         type="button"
-                        variant="outline"
-                        className="rounded-full border-orange-200 text-orange-600"
+                        variant="chip"
                         onClick={() => applyQuickKeyword("light")}
                       >
                         🥗 담백한 쪽
@@ -778,7 +838,8 @@ function HomeView({
                         />
                       </div>
                       <Button
-                        className="h-12 rounded-2xl bg-orange-500 px-6 text-white shadow-lg shadow-orange-200 hover:bg-orange-600"
+                        variant="primary"
+                        className="h-12 px-6 shadow-lg shadow-orange-200"
                         onClick={() => handleSearch(query)}
                       >
                         부위 찾기
@@ -792,6 +853,7 @@ function HomeView({
                         <div className="text-sm text-orange-200">오늘의 추천 부위</div>
                         <div className="text-3xl font-bold">{selectedCut.name}</div>
                       </div>
+
                       <p className="mb-5 text-sm leading-6 text-slate-300">
                         {selectedCut.shortDescription}
                       </p>
@@ -802,21 +864,29 @@ function HomeView({
                             <Heart className="h-4 w-4 text-orange-300" />
                             지방 느낌
                           </div>
-                          <div className="font-semibold">{getFatLabel(selectedCut.fat)}</div>
+                          <div className="font-semibold">
+                            {getFatLabel(selectedCut.fat)}
+                          </div>
                         </div>
+
                         <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
                           <div className="mb-2 flex items-center gap-2 text-sm text-slate-300">
                             <Beef className="h-4 w-4 text-orange-300" />
                             풍미 느낌
                           </div>
-                          <div className="font-semibold">{getFlavorLabel(selectedCut.flavor)}</div>
+                          <div className="font-semibold">
+                            {getFlavorLabel(selectedCut.flavor)}
+                          </div>
                         </div>
+
                         <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
                           <div className="mb-2 flex items-center gap-2 text-sm text-slate-300">
                             <Scale className="h-4 w-4 text-orange-300" />
                             식감 느낌
                           </div>
-                          <div className="font-semibold">{getTenderLabel(selectedCut.texture)}</div>
+                          <div className="font-semibold">
+                            {getTenderLabel(selectedCut.texture)}
+                          </div>
                         </div>
                       </div>
 
@@ -833,9 +903,9 @@ function HomeView({
 
                       <div className="mt-5">
                         <Link href={`/cuts/${selectedCut.slug}`}>
-                          <Button className="w-full rounded-2xl bg-orange-500 text-white hover:bg-orange-600">
+                          <Button variant="primary" fullWidth>
                             자세히 보기
-                            <ChevronRight className="ml-1 h-4 w-4" />
+                            <ChevronRight className="h-4 w-4" />
                           </Button>
                         </Link>
                       </div>
@@ -849,22 +919,36 @@ function HomeView({
               <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
                 <Card className="rounded-[2rem] border-orange-100 bg-white/90 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
                   <CardHeader>
-                    <CardTitle className="text-2xl text-slate-950">부위 위치 한눈에 보기</CardTitle>
+                    <CardTitle className="text-2xl text-slate-950">
+                      부위 위치 한눈에 보기
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <MeatMap meatType={meatType} selected={selectedCut} onSelect={setSelectedCut} />
-                    <p className="mt-4 text-sm text-slate-600">지도의 부위를 누르면 정보가 바뀝니다.</p>
+                    <MeatMap
+                      meatType={meatType}
+                      selected={selectedCut}
+                      onSelect={setSelectedCut}
+                    />
+                    <p className="mt-4 text-sm text-slate-600">
+                      지도의 부위를 누르면 정보가 바뀝니다.
+                    </p>
                   </CardContent>
                 </Card>
 
                 <Card className="rounded-[2rem] border-orange-100 bg-white/90 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
                   <CardHeader>
-                    <CardTitle className="text-2xl text-slate-950">{selectedCut.name} 요약</CardTitle>
+                    <CardTitle className="text-2xl text-slate-950">
+                      {selectedCut.name} 요약
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-5">
                     <div className="flex flex-wrap gap-2">
                       {selectedCut.tags.map((tag) => (
-                        <Badge key={tag} variant="outline" className="rounded-full border-orange-200">
+                        <Badge
+                          key={tag}
+                          variant="outline"
+                          className="rounded-full border-orange-200 bg-white"
+                        >
                           #{tag}
                         </Badge>
                       ))}
@@ -874,18 +958,25 @@ function HomeView({
 
                     <div className="grid gap-4 sm:grid-cols-2">
                       <InfoPill title="위치" value={selectedCut.location} />
-                      <InfoPill title="대표 용도" value={selectedCut.cooking.join(", ")} />
+                      <InfoPill
+                        title="대표 용도"
+                        value={selectedCut.cooking.join(", ")}
+                      />
                     </div>
 
                     <div className="rounded-2xl border border-orange-100 p-4">
-                      <div className="mb-2 text-sm font-semibold text-slate-800">대표 특징</div>
-                      <p className="text-sm leading-6 text-slate-600">{selectedCut.shortDescription}</p>
+                      <div className="mb-2 text-sm font-semibold text-slate-800">
+                        대표 특징
+                      </div>
+                      <p className="text-sm leading-6 text-slate-600">
+                        {selectedCut.shortDescription}
+                      </p>
                     </div>
 
                     <Link href={`/cuts/${selectedCut.slug}`}>
-                      <Button className="w-full rounded-2xl bg-orange-500 text-white hover:bg-orange-600">
+                      <Button variant="primary" fullWidth>
                         자세히 보기
-                        <ChevronRight className="ml-1 h-4 w-4" />
+                        <ChevronRight className="h-4 w-4" />
                       </Button>
                     </Link>
                   </CardContent>
@@ -894,14 +985,19 @@ function HomeView({
             </section>
 
             <section id="recommendation-section">
-              <RecommendationPanel cuts={currentCuts} prefs={prefs} setPrefs={setPrefs} />
+              <RecommendationPanel
+                cuts={currentCuts}
+                prefs={prefs}
+                setPrefs={setPrefs}
+              />
             </section>
 
             <section>
-              <div className="mb-5 flex items-center gap-2">
-                <ArrowLeftRight className="h-5 w-5 text-orange-500" />
-                <h2 className="text-2xl font-bold text-slate-950">비슷한 부위 비교</h2>
-              </div>
+              <SectionTitle
+                title="비슷한 부위 비교"
+                icon={<ArrowLeftRight className="h-5 w-5 text-orange-500" />}
+              />
+
               <div className="grid gap-6 lg:grid-cols-2">
                 {currentComparisonPairs.map((pair) => (
                   <Card
@@ -919,7 +1015,9 @@ function HomeView({
                             className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3"
                           >
                             <span className="text-slate-600">{label}</span>
-                            <span className="font-semibold text-slate-900">{value}</span>
+                            <span className="font-semibold text-slate-900">
+                              {value}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -930,10 +1028,15 @@ function HomeView({
             </section>
 
             <section className="pb-14">
-              <div className="mb-5 flex items-center justify-between gap-4">
-                <h2 className="text-2xl font-bold text-slate-950">부위 목록</h2>
-                <div className="text-sm text-slate-500">총 {filteredCuts.length}개</div>
-              </div>
+              <SectionTitle
+                title="부위 목록"
+                right={
+                  <div className="text-sm text-slate-500">
+                    총 {filteredCuts.length}개
+                  </div>
+                }
+              />
+
               <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                 {filteredCuts.map((cut) => (
                   <CutCard key={cut.slug} cut={cut} />
@@ -980,8 +1083,12 @@ export default function MeatSelectorSite() {
         cut.name.includes(normalized) ||
         cut.shortDescription.includes(normalized) ||
         cut.location.includes(normalized) ||
-        cut.tags.some((tag) => tag.includes(normalized) || normalized.includes(tag)) ||
-        cut.cooking.some((item) => item.includes(normalized) || normalized.includes(item))
+        cut.tags.some(
+          (tag) => tag.includes(normalized) || normalized.includes(tag)
+        ) ||
+        cut.cooking.some(
+          (item) => item.includes(normalized) || normalized.includes(item)
+        )
     );
 
     if (matchedCut) {
